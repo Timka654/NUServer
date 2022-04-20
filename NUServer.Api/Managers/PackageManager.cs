@@ -126,7 +126,7 @@ namespace NUServer.Api.Managers
 
             return new OkObjectResult(new
             {
-                ShareUrl = new Uri(new Uri(controllerContext.HttpContext.Request.Host.ToUriComponent()), $"api/package/{user.ShareToken}/v3/index.json").ToString()
+                ShareUrl = url.Action("Get", "Package", new { user.ShareToken }, controllerContext.HttpContext.Request.Scheme)
             });
         }
 

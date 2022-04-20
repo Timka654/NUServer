@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using NUServer.Api.Data;
 using NUServer.Api.Managers;
@@ -29,6 +30,12 @@ using (var scope = app.Services.CreateScope())
 
     db.Database.Migrate();
 }
+
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 // Configure the HTTP request pipeline.
 

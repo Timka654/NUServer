@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using NUServer.Api.Data;
 using NUServer.Api.Managers;
+using NUServer.Api.Utils.Filters;
 using NUServer.Models;
 using NUServer.Models.Request;
 
@@ -23,10 +24,16 @@ namespace NUServer.Api.Controllers
         [HttpPost("{action}")]
         public async Task<IActionResult> SignUp([FromBody] SignUpRequestModel query)
         {
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             return await userManager.SignUp(ControllerContext, db, query);
         }
+
+        [HttpPost("{action}")]
+        [PublishSignFilter]
+
+        public async Task<IActionResult> GetSharedUrl([FromHeader(Name = "uid")] string userId)
+            => await userManager.GetSharedToken(ControllerContext, Url, db, userId);
     }
 }
