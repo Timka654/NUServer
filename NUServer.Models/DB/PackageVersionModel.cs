@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NUServer.Models
+namespace NUServer.Models.DB
 {
     public class PackageVersionModel
     {

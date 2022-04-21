@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using NUServer.Api.Data;
 using NUServer.Models;
+using NUServer.Models.DB;
 using NUServer.Models.Request;
 
 namespace NUServer.Api.Managers

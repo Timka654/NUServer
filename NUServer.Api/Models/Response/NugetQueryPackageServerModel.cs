@@ -1,5 +1,6 @@
 ﻿using NU.Core.Models.Response;
 using NUServer.Models;
+using NUServer.Models.DB;
 using System.Text.Json.Serialization;
 
 namespace NUServer.Api.Models.Response

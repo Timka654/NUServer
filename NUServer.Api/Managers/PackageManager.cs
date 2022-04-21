@@ -11,6 +11,7 @@ using System.Net;
 using System.Text.Json;
 using NU.Core;
 using NU.Core.Models;
+using NUServer.Models.DB;
 
 namespace NUServer.Api.Managers
 {

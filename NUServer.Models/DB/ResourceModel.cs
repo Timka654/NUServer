@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NUServer.Models.DB
 {
-    public class ResourceDBModel : IndexResourceModel
+    public class ResourceModel : IndexResourceModel
     {
         public int Id { get; set; }
 

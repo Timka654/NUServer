@@ -1,5 +1,6 @@
 ﻿using NUServer.Models;
 using NU.Core.Models.Response;
+using NUServer.Models.DB;
 
 namespace NUServer.Api.Models.Response
 {

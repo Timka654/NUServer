@@ -17,7 +17,7 @@ namespace NUServer.Api.Data
 
         public DbSet<PackageVersionModel> PackageVersionSet { get; set; }
 
-        public DbSet<ResourceDBModel> ResourceSet { get; set; }
+        public DbSet<ResourceModel> ResourceSet { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
