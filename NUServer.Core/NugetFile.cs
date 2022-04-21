@@ -1,7 +1,8 @@
-﻿using NUServer.Core.Models;
+﻿using NU.Core.Models;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using System.Data;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Text;
@@ -11,31 +12,32 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
 
-namespace NUServer.Core
+namespace NU.Core
 {
     public class NugetFile : IDisposable
     {
-        private const string relsFilePath = "_rels/.rels";
+        internal const string RelsFilePath = "_rels/.rels";
 
-        private const string contentTypesFilePath = "[Content_Types].xml";
+        internal const string ContentTypesFilePath = "[Content_Types].xml";
 
-        private const string corePropertiesRelPath = "package/services/metadata/core-properties";
-
-        private static readonly Dictionary<string, string> TypeExtensionMap = new()
-        {
-            { "nuspec", "http://schemas.microsoft.com/packaging/2010/07/manifest" },
-            { "psmdcp", "http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" },
-        };
+        internal const string CorePropertiesRelPath = "package/services/metadata/core-properties";
 
         private ZipArchive nugetFile;
 
-        private NuSpecFileModel nuspecFile;
+        public NuSpecFile NUSpecFile { get; protected set; }
 
-        private RelsFileModel relsFile;
+        public RelsFile RelsFile { get; protected set; }
 
-        private PsmdcpFileModel PsmdcpFile;
+        public PsmdcpFile PsmdcpFile { get; protected set; }
 
-        private ContentTypesFileModel ContentTypesFile;
+        public ContentTypesFile ContentTypesFile { get; protected set; }
+
+
+        public NugetFile(string path) : this(File.OpenRead(path)) { }
+
+        public NugetFile(byte[] data) : this(new MemoryStream(data)) { }
+
+        public NugetFile(Stream path) : this(new ZipArchive(path)) { }
 
         private NugetFile(ZipArchive archive)
         {
@@ -52,31 +54,11 @@ namespace NUServer.Core
 
         public NugetFile(string packageName, string version, string authors)
         {
-            ContentTypesFile = new ContentTypesFileModel()
-            {
-                Types = new List<ContentTypesFileDefaultModel>()
-                {
-                new ContentTypesFileDefaultModel(){ Extension = "rels", ContentType = "application/vnd.openxmlformats-package.relationships+xml" },
-                new ContentTypesFileDefaultModel(){ Extension = "psmdcp", ContentType = "application/vnd.openxmlformats-package.core-properties+xml" },
-                new ContentTypesFileDefaultModel(){ Extension = "dll", ContentType = "application/octet" },
-                new ContentTypesFileDefaultModel(){ Extension = "nuspec", ContentType = "application/octet" }
-                }
-            };
+            NUSpecFile = new NuSpecFile();
 
-            nuspecFile = new NuSpecFileModel2013()
-            {
-                Metadata = new NuSpecMetadataModel()
-                {
-                    Dependencies = new NuSpecDependenciesModel()
-                    {
-                        Groups = new List<NuSpecDependencyGroupModel>()
-                    }
-                }
-            };
+            RelsFile = new RelsFile();
 
-            relsFile = new RelsFileModel() { Relationships = new List<RelationshipModel>() };
-
-            PsmdcpFile = new PsmdcpFileModel();
+            PsmdcpFile = new PsmdcpFile();
 
             Id = packageName;
 
@@ -87,112 +69,43 @@ namespace NUServer.Core
 
         #region Write
 
-        public void CreatePackage(string path)
+        public void CreatePackageDirectory(string dir)
         {
-            path = Path.Combine(path, $"{Id}.{Version}.nupkg");
+            dir = Path.Combine(dir, $"{Id}.{Version}.nupkg");
 
-            //debug
+            if (Directory.Exists(dir))
+                Directory.Delete(dir, true);
 
-            if (Directory.Exists(path))
-                Directory.Delete(path, true);
+            Directory.CreateDirectory(dir);
 
-            Directory.CreateDirectory(path);
 
-            //debug
+            ContentTypesFile.Write(dir);
 
-            WriteContentTypesFile(path);
+            RelsFile.Write(Id, PsmdcpFile, dir);
 
-            WriteRelsFile(path);
+            NUSpecFile.Write(Id, dir);
 
-            WriteNUSPECFile(path);
+            PsmdcpFile.Write(dir);
 
-            WritePsmdcpFile(path);
         }
 
-        private void WriteRelsFile(string path)
+        public void CreatePackage(string fileName)
         {
-            var relsPath = Path.Combine(path, "_rels");
-
-            Directory.CreateDirectory(relsPath);
-
-            relsPath = Path.Combine(path, relsFilePath);
-
-
-            relsFile.Relationships.Clear();
-
-            relsFile.Relationships.Add(new RelationshipModel() { Id = "??", Target = $"/{Id}.nuspec", Type = TypeExtensionMap["nuspec"] });
-            relsFile.Relationships.Add(new RelationshipModel() { Id = "??", Target = $"/{corePropertiesRelPath}/??.psmdcp", Type = TypeExtensionMap["psmdcp"] });
-
-
-            XmlSerializer xs = new XmlSerializer(typeof(RelsFileModel));
-
-            using (var file = File.Create(relsPath))
-            {
-                using (var xmlWriter = XmlWriter.Create(file, new XmlWriterSettings { Indent = true }))
-                    xs.Serialize(xmlWriter, relsFile);
-            }
+            using (var stream = File.OpenWrite(fileName))
+                CreatePackage(stream);
         }
 
-        public void WriteNUSPECFile(string dir)
+        public void CreatePackage(Stream stream)
         {
-            var nuspecPath = Path.Combine(dir, $"{Id}.nuspec");
-
-            using (var file = File.Create(nuspecPath))
+            using (nugetFile = new ZipArchive(stream, ZipArchiveMode.Create))
             {
-                WriteNUSPECFile(file);
-            }
-        }
+                ContentTypesFile.Write(nugetFile);
 
-        public void WriteNUSPECFile(Stream stream)
-        {
-            if(nuspecFile == null)
-                throw new ArgumentNullException(nameof(nuspecFile));
+                RelsFile.Write(Id, PsmdcpFile, nugetFile);
 
-            using (stream)
-            {
-                using (var xmlWriter = XmlWriter.Create(stream, new XmlWriterSettings { Indent = true }))
-                {
-                    if (nuspecFile is NuSpecFileModel2012 nuSpec2012)
-                    {
-                        XmlSerializer xs = new XmlSerializer(typeof(NuSpecFileModel2012));
-                        xs.Serialize(xmlWriter, nuSpec2012);
-                    }
-                    else if (nuspecFile is NuSpecFileModel2013 nuSpec2013)
-                    {
-                        XmlSerializer xs = new XmlSerializer(typeof(NuSpecFileModel2013));
-                        xs.Serialize(xmlWriter, nuSpec2013);
-                    }
-                    else
-                    {
-                        throw new InvalidCastException($"nuspecFile have unsupported type {nuspecFile?.GetType()}");
-                    }
-                }
-            }
-        }
+                NUSpecFile.Write(Id, nugetFile);
 
-        private void WritePsmdcpFile(string path)
-        {
-            var nuspecPath = Path.Combine(path, corePropertiesRelPath, $"??.psmdcp");
-
-            XmlSerializer xs = new XmlSerializer(typeof(PsmdcpFileModel));
-
-            using (var file = File.Create(nuspecPath))
-            {
-                using (var xmlWriter = XmlWriter.Create(file, new XmlWriterSettings { Indent = true }))
-                    xs.Serialize(xmlWriter, PsmdcpFile);
-            }
-        }
-
-        private void WriteContentTypesFile(string path)
-        {
-            var contentTypesPath = Path.Combine(path, contentTypesFilePath);
-
-            XmlSerializer xs = new XmlSerializer(typeof(ContentTypesFileModel));
-
-            using (var file = File.Create(contentTypesPath))
-            {
-                using (var xmlWriter = XmlWriter.Create(file, new XmlWriterSettings { Indent = true }))
-                    xs.Serialize(xmlWriter, ContentTypesFile);
+                PsmdcpFile.Write(nugetFile);
             }
         }
 
@@ -202,143 +115,92 @@ namespace NUServer.Core
 
         public string Id
         {
-            get => nuspecFile.Metadata.Id;
-            set => PsmdcpFile.Identifier = nuspecFile.Metadata.Id = value;
+            get => NUSpecFile.Data.Metadata.Id;
+            set => PsmdcpFile.Data.Identifier = NUSpecFile.Data.Metadata.Id = value;
         }
 
         public string Version
         {
-            get => nuspecFile.Metadata.Version;
-            set => PsmdcpFile.Version = nuspecFile.Metadata.Version = value;
+            get => NUSpecFile.Data.Metadata.Version;
+            set => PsmdcpFile.Data.Version = NUSpecFile.Data.Metadata.Version = value;
         }
 
         public string Authors
         {
-            get => nuspecFile.Metadata.Authors;
-            set => PsmdcpFile.Creator = nuspecFile.Metadata.Authors = value;
+            get => NUSpecFile.Data.Metadata.Authors;
+            set => PsmdcpFile.Data.Creator = NUSpecFile.Data.Metadata.Authors = value;
         }
 
         public string Description
         {
-            get => nuspecFile.Metadata.Description;
-            set => PsmdcpFile.Description = nuspecFile.Metadata.Description = value;
+            get => NUSpecFile.Data.Metadata.Description;
+            set => PsmdcpFile.Data.Description = NUSpecFile.Data.Metadata.Description = value;
         }
 
         public string Keywords
         {
-            get => PsmdcpFile.Keywords;
-            set => PsmdcpFile.Keywords = value;
+            get => PsmdcpFile.Data.Keywords;
+            set => PsmdcpFile.Data.Keywords = value;
         }
 
         public string LastModifiedBy
         {
-            get => PsmdcpFile.LastModifiedBy;
-            set => PsmdcpFile.LastModifiedBy = value;
+            get => PsmdcpFile.Data.LastModifiedBy;
+            set => PsmdcpFile.Data.LastModifiedBy = value;
         }
 
-        public NuSpecDependenciesModel Dependencies => nuspecFile.Metadata.Dependencies;
+        public NuSpecDependenciesModel Dependencies => NUSpecFile.Data.Metadata.Dependencies;
 
         #endregion
 
         #region Read
 
-        private void ReadRelsFile()
+        private void ReadContentTypesFile()
         {
-            var fileEntry = nugetFile.GetEntry(relsFilePath);
+            var fileEntry = nugetFile.GetEntry(ContentTypesFilePath);
 
             using (var stream = fileEntry.Open())
-            {
-                var xs = new XmlSerializer(typeof(RelsFileModel));
+                ContentTypesFile = new ContentTypesFile(stream);
+        }
 
-                relsFile = xs.Deserialize(stream) as RelsFileModel;
-            }
+        private void ReadRelsFile()
+        {
+            var fileEntry = nugetFile.GetEntry(RelsFilePath);
+
+            using (var stream = fileEntry.Open())
+                RelsFile = new RelsFile(stream);
         }
 
         private void ReadNUSPECFile()
         {
-            var nuspecRel = relsFile.Relationships.First(x => x.Type == TypeExtensionMap["nuspec"]);
+            var nuspecRel = RelsFile.Data.Relationships.First(x => x.Type == RelsFile.TypeExtensionMap["nuspec"]);
 
-            var fileEntry = nugetFile.GetEntry(normalizeRelPath(nuspecRel.Target));
+            var fileEntry = nugetFile.GetEntry(new string(nuspecRel.Target.Skip(1).ToArray()));
 
-            var xDocument = XDocument.Load(fileEntry.Open());
-
-            string @namespace = xDocument.Root?.Name.Namespace.NamespaceName;
-
-            using (var stream = xDocument.Root.CreateReader())
-            {
-                XmlSerializer xs = default;
-
-                if (@namespace == "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd")
-                {
-                    xs = new XmlSerializer(typeof(NuSpecFileModel2013));
-
-                    nuspecFile = xs.Deserialize(stream) as NuSpecFileModel2013;
-                }
-                else if (@namespace == "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd")
-                {
-                    xs = new XmlSerializer(typeof(NuSpecFileModel2012));
-
-                    nuspecFile = xs.Deserialize(stream) as NuSpecFileModel2012;
-                }
-                else
-                {
-                    throw new InvalidCastException($"NUSpec file have unsupported namespace {xDocument.Root?.Name.Namespace.NamespaceName}");
-                }
-            }
+            using (var stream = fileEntry.Open())
+                NUSpecFile = new NuSpecFile(stream);
         }
 
         private void ReadPsmdcpFile()
         {
-            var nuspecRel = relsFile.Relationships.First(x => x.Type == TypeExtensionMap["psmdcp"]);
+            var nuspecRel = RelsFile.Data.Relationships.First(x => x.Type == RelsFile.TypeExtensionMap["psmdcp"]);
 
-            var fileEntry = nugetFile.GetEntry(normalizeRelPath(nuspecRel.Target));
+            var fileEntry = nugetFile.GetEntry(new string(nuspecRel.Target.Skip(1).ToArray()));
 
-            using (var stream = fileEntry.Open())
-            {
-                var xs = new XmlSerializer(typeof(PsmdcpFileModel));
-
-                PsmdcpFile = xs.Deserialize(stream) as PsmdcpFileModel;
-            }
-        }
-
-        private void ReadContentTypesFile()
-        {
-            var fileEntry = nugetFile.GetEntry(contentTypesFilePath);
+            if (!Guid.TryParse(Path.GetFileName(nuspecRel.Target).Split('.').First(), out var psmdcpName))
+                throw new InvalidDataException(nuspecRel.Target);
 
             using (var stream = fileEntry.Open())
-            {
-                var xs = new XmlSerializer(typeof(ContentTypesFileModel));
-
-                ContentTypesFile = xs.Deserialize(stream) as ContentTypesFileModel;
-            }
+                PsmdcpFile = new PsmdcpFile(stream, psmdcpName);
         }
 
-        private string normalizeRelPath(string path) => path.TrimStart('/');
-
-        public static NugetFile Read(string path) => Read(File.OpenRead(path));
-
-        public static NugetFile Read(byte[] data)
-            => Read(new MemoryStream(data));
-
-        public static NugetFile Read(Stream path)
-            => new NugetFile(new ZipArchive(path));
 
         #endregion
 
         public void Dispose()
         {
-            nugetFile?.Dispose();
+            if (nugetFile != null)
+                nugetFile.Dispose();
         }
-    }
-
-    // This class copied from this answer https://stackoverflow.com/a/873281/3744182
-    // To https://stackoverflow.com/questions/870293/can-i-make-xmlserializer-ignore-the-namespace-on-deserialization
-    // By https://stackoverflow.com/users/48082/cheeso
-    // helper class to ignore namespaces when de-serializing
-    public class NamespaceIgnorantXmlTextReader : XmlTextReader
-    {
-        public NamespaceIgnorantXmlTextReader(System.IO.Stream reader) : base(reader) { }
-
-        public override string NamespaceURI { get { return ""; } }
     }
 }

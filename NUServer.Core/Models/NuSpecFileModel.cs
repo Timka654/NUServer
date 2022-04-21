@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace NUServer.Core.Models
+namespace NU.Core.Models
 {
     [XmlRoot("package", Namespace = "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd")]
     public class NuSpecFileModel2012 : NuSpecFileModel { }

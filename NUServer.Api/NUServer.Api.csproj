@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NUServer.Core\NUServer.Core.csproj" />
+    <ProjectReference Include="..\NUServer.Core\NU.Core.csproj" />
     <ProjectReference Include="..\NUServer.Models\NUServer.Models.csproj" />
   </ItemGroup>
 

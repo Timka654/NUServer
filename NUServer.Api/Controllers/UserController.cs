@@ -32,7 +32,6 @@ namespace NUServer.Api.Controllers
 
         [HttpPost("{action}")]
         [PublishSignFilter]
-
         public async Task<IActionResult> GetSharedUrl([FromHeader(Name = "uid")] string userId)
             => await userManager.GetSharedToken(ControllerContext, Url, db, userId);
     }

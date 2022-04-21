@@ -4,12 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Query.ExpressionTranslators.Internal;
 using NUServer.Api.Data;
-using NUServer.Core;
+using NUServer.Api.Models.Response;
 using NUServer.Models;
-using NUServer.Models.Nuget;
-using NUServer.Models.Response;
+using NU.Core.Models.Response;
 using System.Net;
 using System.Text.Json;
+using NU.Core;
+using NU.Core.Models;
 
 namespace NUServer.Api.Managers
 {
@@ -62,7 +63,7 @@ namespace NUServer.Api.Managers
         {
             var fileStream = packageFile.OpenReadStream();
 
-            var nuPkg = NugetFile.Read(fileStream);
+            var nuPkg = new NugetFile(fileStream);
 
             var user = await dbContext.Set<UserModel>().FindAsync(Guid.Parse(uid));
 
@@ -82,7 +83,7 @@ namespace NUServer.Api.Managers
 
             return new OkObjectResult(new
             {
-                ShareUrl = url.Action("Get", "Package",new { user.ShareToken }, controllerContext.HttpContext.Request.Scheme)
+                ShareUrl = url.Action("Get", "Package", new { user.ShareToken }, controllerContext.HttpContext.Request.Scheme)
             });
         }
 
@@ -98,7 +99,7 @@ namespace NUServer.Api.Managers
             {
                 var fileStream = packageFile.OpenReadStream();
 
-                var nuPkg = NugetFile.Read(fileStream);
+                var nuPkg = new NugetFile(fileStream);
 
                 packages.Add((nuPkg, fileStream));
 
@@ -209,14 +210,7 @@ namespace NUServer.Api.Managers
                 await stream.CopyToAsync(ofile);
             }
 
-            nugetFile.WriteNUSPECFile(dir);
-
-
-            //await File.WriteAllTextAsync(GetPackageVersionFilePath(nugetFile), JsonSerializer.Serialize(new VersionInfoNugetModel()
-            //{
-
-            //}));
-
+            nugetFile.NUSpecFile.Write(nugetFile.Id, dir);
 
             nugetFile.Dispose();
             stream.Dispose();
@@ -251,7 +245,7 @@ namespace NUServer.Api.Managers
                 }
             }
 
-            return new OkObjectResult(new NugetRegistrationResponseModel(package, (packageName, packageVersion) =>
+            return new OkObjectResult(new NugetRegistrationResponseServerModel(package, (packageName, packageVersion) =>
             {
                 return url.Action("Registration", "Package", new
                 {
@@ -306,52 +300,32 @@ namespace NUServer.Api.Managers
             if (skip.HasValue)
                 query = query.Skip(skip.Value);
 
-            if (take.HasValue)
-                query = query.Take(take.Value);
+            if (!take.HasValue)
+                take = 100;
+
+            query = query.Take(take.Value);
+
 
             return query;
         }
 
         internal async Task<IActionResult> Query(ControllerContext controllerContext, ApplicationDbContext dbContext, string shareToken, string? q, int? skip, int? take, bool? prerelease, string? semVerLevel, string? packageType)
-        {
-            var data = await SelectPackages(dbContext, shareToken, q, skip, take, prerelease, semVerLevel, packageType)
-                .Select(x => new NugetQueryPackageModel { Data = x })
-                .ToArrayAsync();
-
-            return new OkObjectResult(new NugetQueryResponseModel
-            {
-                Data = data
-            });
-        }
+            => new OkObjectResult(new NugetQueryResponseServerModel(await SelectPackages(dbContext, shareToken, q, skip, take, prerelease, semVerLevel, packageType)
+                .Select(x => new NugetQueryPackageServerModel(x))
+                .ToArrayAsync()));
 
         internal async Task<IActionResult> AutoCompleteName(ApplicationDbContext dbContext, string shareToken, string? q, int? skip, int? take, bool? prerelease, string? semVerLevel, string? packageType)
-        {
-            var data = await SelectPackages(dbContext, shareToken, q, skip, take, prerelease, semVerLevel, packageType)
+            => new OkObjectResult(new NugetAutoCompleteResponseServerModel(await SelectPackages(dbContext, shareToken, q, skip, take, prerelease, semVerLevel, packageType)
                 .Select(x => x.Name)
-                .ToArrayAsync();
-
-            return new OkObjectResult(new NugetAutoCompleteResponseModel
-            {
-                Data = data
-            });
-        }
+                .ToArrayAsync()));
 
         internal async Task<IActionResult> GenerateNuGetIndex(Data.ApplicationDbContext dbContext, string shareToken)
-        {
-            var result = new NugetIndexResponseModel
+            => new OkObjectResult(new NugetIndexResponseServerModel("3.0.0", await dbContext.ResourceSet.Where(x => x.Active).Select(x => new IndexResourceModel
             {
-                Version = "3.0.0",
-                Resources = await dbContext.ResourceSet.Where(x => x.Active).Select(x => new ResourceModel
-                {
-                    Url = x.Url.Replace("{shareToken}", shareToken),
-                    Type = x.Type,
-                    Comment = x.Comment
-                }).ToArrayAsync()
-            };
-
-
-            return new OkObjectResult(result);
-        }
+                Url = x.Url.Replace("{shareToken}", shareToken),
+                Type = x.Type,
+                Comment = x.Comment
+            }).ToArrayAsync()));
 
         internal async Task<IActionResult> GetNuPkgFile(ApplicationDbContext dbContext, string shareToken, string name, string version)
         {

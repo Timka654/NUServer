@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace NUServer.Core.Models
+namespace NU.Core.Models
 {
     [XmlRoot("coreProperties", Namespace = "http://schemas.openxmlformats.org/package/2006/metadata/core-properties")]
     public class PsmdcpFileModel

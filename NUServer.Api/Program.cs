@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using NUServer.Api.Data;
 using NUServer.Api.Managers;
-using NUServer.Core;
+using NUServer.Api.Utils;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,10 +17,12 @@ builder.Services.AddSingleton<UserManager>();
 
 
 builder.Services.AddControllers().
-    AddJsonOptions(c => { 
-        c.JsonSerializerOptions.WriteIndented = true; 
-        c.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles; 
-    });
+AddJsonOptions(c =>
+{
+    c.JsonSerializerOptions.WriteIndented = true;
+    c.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
 
 var app = builder.Build();
 

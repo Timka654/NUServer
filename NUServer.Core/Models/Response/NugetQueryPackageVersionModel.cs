@@ -3,18 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace NUServer.Models.Response
+namespace NU.Core.Models.Response
 {
     public class NugetQueryPackageVersionModel
     {
-        [JsonIgnore]
-        public PackageVersionModel Data;
+        public virtual string Version { get; set; }
 
-        public string Version => Data.Version;
-
-        public long Downloads => Data.DownloadCount;
+        public virtual long Downloads { get; set; }
     }
 }

@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NUServer.Models.Response
+namespace NU.Core.Models.Response
 {
-    public class NugetAutoCompleteResponseModel
+    public class NugetQueryResponseModel
     {
         public int TotalHits => Data.Length;
 
-        public string[] Data { get; set; }
+        public NugetQueryPackageModel[] Data { get; set; }
     }
 }
