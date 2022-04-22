@@ -1,14 +1,9 @@
-﻿using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Query.ExpressionTranslators.Internal;
 using NUServer.Api.Data;
 using NUServer.Api.Models.Response;
-using NUServer.Models;
 using NU.Core.Models.Response;
 using System.Net;
-using System.Text.Json;
 using NU.Core;
 using NU.Core.Models;
 using NUServer.Models.DB;
@@ -220,7 +215,6 @@ namespace NUServer.Api.Managers
         #endregion
 
 
-
         internal async Task<IActionResult> Registration(ControllerContext controllerContext, IUrlHelper url, ApplicationDbContext dbContext, string shareToken, string name)
         {
             var package = await dbContext.Set<PackageModel>()
@@ -248,6 +242,8 @@ namespace NUServer.Api.Managers
 
             return new OkObjectResult(new NugetRegistrationResponseServerModel(package, (packageName, packageVersion) =>
             {
+                packageName = packageName.ToLower();
+
                 return url.Action("Registration", "Package", new
                 {
                     shareToken,
@@ -276,13 +272,13 @@ namespace NUServer.Api.Managers
             if (package == null)
                 return new StatusCodeResult(404);
 
-            return new OkObjectResult(new
+            return new OkObjectResult(new NugetFlatPackageVersionsResponseModel
             {
-                versions = package.VersionList.Select(x => x.Version).ToArray()
+                Versions = package.VersionList.Select(x => x.Version).ToArray()
             });
         }
 
-        private IQueryable<PackageModel> SelectPackages(ApplicationDbContext dbContext, string shareToken, string? q, int? skip, int? take, bool? prerelease, string? semVerLevel, string? packageType)
+        private IQueryable<PackageModel> SelectPackagesQuery(ApplicationDbContext dbContext, string shareToken, string? q)
         {
             var set = dbContext.Set<PackageModel>();
 
@@ -298,28 +294,39 @@ namespace NUServer.Api.Managers
                 query = query.Where(x => x.Name.ToLower().Contains(q));
             }
 
+            return query;
+        }
+
+        private IQueryable<PackageModel> SelectPackages(IQueryable<PackageModel> query, int? skip, int? take)
+        {
             if (skip.HasValue)
                 query = query.Skip(skip.Value);
 
-            if (!take.HasValue)
+            if (!take.HasValue || take.Value > 100)
                 take = 100;
 
             query = query.Take(take.Value);
-
 
             return query;
         }
 
         internal async Task<IActionResult> Query(ControllerContext controllerContext, ApplicationDbContext dbContext, string shareToken, string? q, int? skip, int? take, bool? prerelease, string? semVerLevel, string? packageType)
-            => new OkObjectResult(new NugetQueryResponseServerModel(await SelectPackages(dbContext, shareToken, q, skip, take, prerelease, semVerLevel, packageType)
-                .Select(x => new NugetQueryPackageServerModel(x))
-                .ToArrayAsync()));
+        {
+            var query = SelectPackagesQuery(dbContext, shareToken, q);
+
+            return new OkObjectResult(new NugetQueryResponseServerModel(await query.CountAsync(), await SelectPackages(query, skip, take)
+                  .Select(x => new NugetQueryPackageServerModel(x))
+                  .ToListAsync()));
+        }
 
         internal async Task<IActionResult> AutoCompleteName(ApplicationDbContext dbContext, string shareToken, string? q, int? skip, int? take, bool? prerelease, string? semVerLevel, string? packageType)
-            => new OkObjectResult(new NugetAutoCompleteResponseServerModel(await SelectPackages(dbContext, shareToken, q, skip, take, prerelease, semVerLevel, packageType)
-                .Select(x => x.Name)
-                .ToArrayAsync()));
+        {
+            var query = SelectPackagesQuery(dbContext, shareToken, q);
 
+            return new OkObjectResult(new NugetAutoCompleteResponseServerModel(await query.CountAsync(), await SelectPackages(query, skip, take)
+                  .Select(x => x.Name)
+                  .ToListAsync()));
+        }
         internal async Task<IActionResult> GenerateNuGetIndex(Data.ApplicationDbContext dbContext, string shareToken)
             => new OkObjectResult(new NugetIndexResponseServerModel("3.0.0", await dbContext.ResourceSet.Where(x => x.Active).Select(x => new IndexResourceModel
             {

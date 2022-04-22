@@ -4,9 +4,10 @@ namespace NUServer.Api.Models.Response
 {
     public class NugetQueryResponseServerModel : NugetQueryResponseModel
     {
-        public NugetQueryResponseServerModel(NugetQueryPackageServerModel[] data)
+        public NugetQueryResponseServerModel(int totalHits, List<NugetQueryPackageServerModel> data)
         {
-            Data = data;
+            TotalHits = totalHits;
+            Data = new List<NugetQueryPackageModel>(data);
         }
     }
 }

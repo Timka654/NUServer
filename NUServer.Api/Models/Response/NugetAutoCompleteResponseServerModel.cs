@@ -4,8 +4,9 @@ namespace NUServer.Api.Models.Response
 {
     public class NugetAutoCompleteResponseServerModel : NugetAutoCompleteResponseModel
     {
-        public NugetAutoCompleteResponseServerModel(string[] data)
+        public NugetAutoCompleteResponseServerModel(int totalHits, List<string> data)
         {
+            TotalHits = totalHits;
             Data = data;
         }
     }

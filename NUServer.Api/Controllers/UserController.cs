@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NUServer.Api.Data;
 using NUServer.Api.Managers;
 using NUServer.Api.Utils.Filters;
-using NUServer.Models;
 using NUServer.Models.Request;
 
 namespace NUServer.Api.Controllers

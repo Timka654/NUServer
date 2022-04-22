@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace NU.Core.Models.Response
 {
@@ -16,7 +13,7 @@ namespace NU.Core.Models.Response
         //".NET Foundation",
         public string Authors { get; set; }
 
-        public virtual NugetRegistrationCatalogDepedencyGroupModel[] DependencyGroups { get; set; }
+        public virtual List<NugetRegistrationCatalogDepedencyGroupModel> DependencyGroups { get; set; }
 
         //"Core library for creating a Web Application used to host a simple NuGet feed"
         public string Description { get; set; }
@@ -64,6 +61,6 @@ namespace NU.Core.Models.Response
         //"3.0.0-beta"
         public string Version { get; set; }
 
-        public NugetRegistrationCatalogVulnerabilitiesModel[] Vulnerabilities { get; set; }
+        public List<NugetRegistrationCatalogVulnerabilitiesModel> Vulnerabilities { get; set; }
     }
 }

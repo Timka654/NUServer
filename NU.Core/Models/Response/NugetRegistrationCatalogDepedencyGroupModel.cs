@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace NU.Core.Models.Response
 {
@@ -15,6 +11,6 @@ namespace NU.Core.Models.Response
 
         public virtual string TargetFramework { get; set; }
 
-        public virtual NugetRegistrationCatalogDepedencyModel[] Dependencies { get; set; }
+        public virtual List<NugetRegistrationCatalogDepedencyModel> Dependencies { get; set; }
     }
 }

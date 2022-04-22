@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace NU.Core.Models.Response
 {
@@ -13,9 +9,9 @@ namespace NU.Core.Models.Response
         [JsonPropertyName("@id")]
         public virtual string Url { get; set; }
 
-        public int Count => Items.Length;
+        public int Count => Items.Count;
 
-        public NugetRegistrationLeafModel[] Items { get; set; }
+        public List<NugetRegistrationLeafModel> Items { get; set; }
 
         //"3.0.0-beta",
         public string Lower { get; set; }

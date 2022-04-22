@@ -1,5 +1,4 @@
 ﻿using NU.Core.Models.Response;
-using NUServer.Models;
 using NUServer.Models.DB;
 using System.Text.Json.Serialization;
 
@@ -30,7 +29,7 @@ namespace NUServer.Api.Models.Response
         {
             Data = data;
 
-            Versions = Data.VersionList.Select(x => new NugetQueryPackageVersionServerModel(x)).ToArray();
+            Versions = new List<NugetQueryPackageVersionModel>(Data.VersionList.Select(x => new NugetQueryPackageVersionServerModel(x)));
         }
     }
 }

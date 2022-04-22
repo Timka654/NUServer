@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace NU.Core.Models.Response
 {
     public class NugetQueryResponseModel
     {
-        public int TotalHits => Data.Length;
+        public int TotalHits { get; set; }
 
-        public NugetQueryPackageModel[] Data { get; set; }
+        public List<NugetQueryPackageModel> Data { get; set; }
     }
 }

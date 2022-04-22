@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NUServer.Models;
 using NUServer.Models.DB;
 
 namespace NUServer.Api.Data

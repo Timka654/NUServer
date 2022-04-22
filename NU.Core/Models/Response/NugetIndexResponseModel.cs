@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace NU.Core.Models.Response
 {
@@ -10,6 +6,6 @@ namespace NU.Core.Models.Response
     {
         public string Version { get; set; }
 
-        public IndexResourceModel[] Resources { get; set; }
+        public List<IndexResourceModel> Resources { get; set; }
     }
 }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace NU.Core.Models.Response
 {
@@ -22,7 +18,7 @@ namespace NU.Core.Models.Response
 
         public virtual bool Verified { get; set; }
 
-        public virtual NugetQueryPackageVersionModel[] Versions { get; set; }
+        public virtual List<NugetQueryPackageVersionModel> Versions { get; set; }
 
         public virtual object[] PackageTypes { get; set; }
     }

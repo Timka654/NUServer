@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace NU.Core.Models
@@ -26,14 +22,50 @@ namespace NU.Core.Models
         [XmlElement("id")]
         public string Id { get; set; }
 
+        [XmlElement("title")]
+        public string Title { get; set; }
+
         [XmlElement("version")]
         public string Version { get; set; }
 
         [XmlElement("authors")]
         public string Authors { get; set; }
 
+        [XmlElement("owners")]
+        public string Owners { get; set; }
+
         [XmlElement("description")]
         public string Description { get; set; }
+
+        [XmlElement("requireLicenseAcceptance")]
+        public bool RequireLicenseAcceptance { get; set; }
+
+        [XmlElement("icon")]
+        public string Icon { get; set; }
+
+        [XmlElement("tags")]
+        public string Tags { get; set; }
+
+        [XmlElement("projectUrl")]
+        public string ProjectUrl { get; set; }
+
+        [XmlElement("copyright")]
+        public string Copyright { get; set; }
+
+        [XmlElement("readme")]
+        public string Readme { get; set; }
+
+        [XmlElement("releaseNotes")]
+        public string ReleaseNotes { get; set; }
+
+        [XmlElement("summary")]
+        public string Summary { get; set; }
+
+        [XmlElement("licenseUrl")]
+        public string LicenseUrl { get; set; }
+
+        [XmlElement("language")]
+        public string Language { get; set; }
 
         [XmlElement("dependencies")]
         public NuSpecDependenciesModel Dependencies { get; set; }

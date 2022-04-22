@@ -1,5 +1,4 @@
-﻿using NUServer.Models;
-using NU.Core.Models.Response;
+﻿using NU.Core.Models.Response;
 using System.Text.Json.Serialization;
 using NUServer.Models.DB;
 
@@ -12,7 +11,7 @@ namespace NUServer.Api.Models.Response
 
         public NugetRegistrationPageServerModel(PackageModel package, Func<string, string?, string> registrationUrl, Func<string, string?, string> nupkgUrl)
         {
-            Items = package.VersionList.Select(x => new NugetRegistrationLeafServerModel(package, x, registrationUrl, nupkgUrl)).ToArray();
+            Items = new List<NugetRegistrationLeafModel>(package.VersionList.Select(x => new NugetRegistrationLeafServerModel(package, x, registrationUrl, nupkgUrl)));
 
             Lower = package.VersionList.OrderBy(x => x.UploadTime).First().Version;
 

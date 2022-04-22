@@ -1,5 +1,4 @@
-﻿using NUServer.Models;
-using NU.Core.Models.Response;
+﻿using NU.Core.Models.Response;
 using System.Text.Json.Serialization;
 using NUServer.Models.DB;
 
@@ -23,7 +22,7 @@ namespace NUServer.Api.Models.Response
             Version = version.Version;
             Published = version.UploadTime;
 
-            DependencyGroups = version.DepedencyGroupList.Select(x => new NugetRegistrationCatalogDepedencyGroupServerModel(package, version, x, registrationUrl)).ToArray();
+            DependencyGroups = new List<NugetRegistrationCatalogDepedencyGroupModel>(version.DepedencyGroupList.Select(x => new NugetRegistrationCatalogDepedencyGroupServerModel(package, version, x, registrationUrl)));
         }
     }
 }
