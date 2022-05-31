@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Serialization;
@@ -87,8 +88,10 @@ namespace NU.Core
             if (Data == null)
                 throw new ArgumentNullException(nameof(Data));
 
-            XmlSerializerNamespaces myNamespaces = new XmlSerializerNamespaces();
-            myNamespaces.Add("", "");
+            XmlSerializerNamespaces myNamespaces = Data.xmlns;
+
+            if (!myNamespaces.ToArray().Any(x => x.Name == string.Empty))
+                myNamespaces.Add("", "");
 
             using (var xmlWriter = XmlWriter.Create(stream, new XmlWriterSettings { Indent = true }))
             {

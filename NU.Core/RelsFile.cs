@@ -3,6 +3,7 @@ using NU.Core.Utils;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -61,8 +62,10 @@ namespace NU.Core
             Data.Relationships.Add(CreateRelationship($"/{id}.nuspec", TypeExtensionMap["nuspec"]));
             Data.Relationships.Add(CreateRelationship($"/{NugetFile.CorePropertiesRelPath}/{psmdcp.CalcPsmdcpName()}.psmdcp", TypeExtensionMap["psmdcp"]));
 
-            XmlSerializerNamespaces myNamespaces = new XmlSerializerNamespaces();
-            myNamespaces.Add("", "");
+            XmlSerializerNamespaces myNamespaces = Data.xmlns;
+
+            if (!myNamespaces.ToArray().Any(x => x.Name == string.Empty))
+                myNamespaces.Add("", "");
 
             XmlSerializer xs = new XmlSerializer(typeof(RelsFileModel));
 

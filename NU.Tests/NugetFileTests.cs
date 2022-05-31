@@ -1,6 +1,7 @@
 using NU.Core;
 using NU.Core.Models.Response;
 using NUnit.Framework;
+using System.IO;
 using System.Text.Json;
 
 namespace NU.Tests
@@ -15,11 +16,18 @@ namespace NU.Tests
         [Test]
         public void Test1()
         {
-            var nugetPack = new NugetFile(@"D:\Projects\work\my\NSL\NSL\build\Release\package_2022.04.15.1626\NSL.Utils.2022.4.15.1626.nupkg");
+            var nugetPack = new NugetFile(@"D:\Projects\work\my\NSL\NSL\build\Release\package_2022.04.23.2030\NSL.Extensions.DBEngine.Migrator.2022.4.23.2030.nupkg");
 
-            var dir = @"D:\Projects\work\my\NSL\NSL\build\Release\package_2022.04.15.1626\test";
+            var dir = @"D:\Projects\work\my\NSL\NSL\build\Release\package_2022.04.23.2030\test";
 
-            nugetPack.CreatePackageDirectory(dir);
+            if(Directory.Exists(dir))
+                Directory.Delete(dir, true);    
+
+            Directory.CreateDirectory(dir);
+
+            nugetPack.NUSpecFile.Write("test", dir);
+
+            //nugetPack.CreatePackageDirectory(dir);
         }
 
         [Test]

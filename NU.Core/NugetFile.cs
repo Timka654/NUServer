@@ -1,5 +1,6 @@
 ﻿using NU.Core.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -146,6 +147,32 @@ namespace NU.Core
         #endregion
 
         #region Read
+
+        public IReadOnlyCollection<ZipArchiveEntry> GetEntries()
+        {
+            return nugetFile.Entries;
+        }
+
+        public ZipArchiveEntry[] GetFiles(string targetFramework)
+        {
+            return nugetFile.Entries.Where(x => x.FullName.StartsWith($"lib/{targetFramework}/", StringComparison.OrdinalIgnoreCase)).ToArray();
+        }
+
+        public void DumpFrameworkFiles(string dir, string targetFramework)
+        {
+            if (!Directory.Exists(dir))
+                throw new DirectoryNotFoundException(dir);
+
+            var entityes = GetFiles(targetFramework);
+
+            if (entityes.Any() == false)
+                throw new ArgumentOutOfRangeException(targetFramework);
+
+            foreach (var item in entityes)
+            {
+                item.ExtractToFile(Path.Combine(dir, item.Name), true);
+            }
+        }
 
         private void ReadContentTypesFile()
         {
