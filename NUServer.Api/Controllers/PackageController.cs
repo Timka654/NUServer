@@ -20,6 +20,7 @@ namespace NUServer.Api.Controllers
 
         [HttpPost("{action}")]
         [PublishSignFilter]
+        [DisableRequestSizeLimit]
         public async Task<IActionResult> Publish([FromForm(Name = "package")] IFormFile[] package, [FromHeader(Name = "uid")] string userId)
             => await packageManager.PublishPackage(ControllerContext, Url, dbContext, package, userId);
 
