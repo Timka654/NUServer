@@ -1,6 +1,6 @@
 ﻿namespace NU.Core.Models.Response
 {
-    public class NugetQueryPackageVersionModel
+    public class NuGetQueryPackageVersionModel
     {
         public virtual string Version { get; set; }
 

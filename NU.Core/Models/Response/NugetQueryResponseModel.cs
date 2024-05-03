@@ -2,10 +2,10 @@
 
 namespace NU.Core.Models.Response
 {
-    public class NugetQueryResponseModel
+    public class NuGetQueryResponseModel
     {
         public int TotalHits { get; set; }
 
-        public List<NugetQueryPackageModel> Data { get; set; }
+        public List<NuGetQueryPackageModel> Data { get; set; }
     }
 }

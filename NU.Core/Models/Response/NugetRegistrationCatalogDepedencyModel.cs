@@ -2,9 +2,9 @@
 
 namespace NU.Core.Models.Response
 {
-    public class NugetRegistrationCatalogDepedencyModel
+    public class NuGetRegistrationCatalogDepedencyModel
     {
-        //"https://api.nuget.org/v3/catalog0/data/2017.10.05.18.41.33/nuget.server.core.3.0.0-beta.json#dependencygroup/nuget.core"
+        //"https://api.NuGet.org/v3/catalog0/data/2017.10.05.18.41.33/NuGet.server.core.3.0.0-beta.json#dependencygroup/NuGet.core"
         [JsonPropertyName("@id")]
         public virtual string Url { get; set; }
 
@@ -15,7 +15,7 @@ namespace NU.Core.Models.Response
         //"[2.14.0, )"
         public virtual string Range { get; set; }
 
-        //"https://api.nuget.org/v3/registration3/nuget.core/index.json"
+        //"https://api.NuGet.org/v3/registration3/NuGet.core/index.json"
         public virtual string Registration { get; set; }
     }
 }

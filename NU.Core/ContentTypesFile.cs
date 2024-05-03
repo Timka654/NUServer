@@ -39,7 +39,7 @@ namespace NU.Core
 
         public void Write(string dir)
         {
-            var contentTypesPath = Path.Combine(dir, NugetFile.ContentTypesFilePath);
+            var contentTypesPath = Path.Combine(dir, NuGetFile.ContentTypesFilePath);
 
             using (var file = File.Create(contentTypesPath))
                 Write(file);
@@ -47,7 +47,7 @@ namespace NU.Core
 
         public void Write(ZipArchive archive)
         {
-            var entry = archive.CreateEntry(NugetFile.ContentTypesFilePath);
+            var entry = archive.CreateEntry(NuGetFile.ContentTypesFilePath);
 
             using (var file = entry.Open())
                 Write(file);

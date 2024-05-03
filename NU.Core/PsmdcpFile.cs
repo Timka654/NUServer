@@ -43,7 +43,7 @@ namespace NU.Core
 
         public void Write(string path)
         {
-            var nuspecPath = Path.Combine(path, NugetFile.CorePropertiesRelPath);
+            var nuspecPath = Path.Combine(path, NuGetFile.CorePropertiesRelPath);
 
             if (!Directory.Exists(nuspecPath))
                 Directory.CreateDirectory(nuspecPath);
@@ -56,7 +56,7 @@ namespace NU.Core
 
         internal void Write(ZipArchive nugetFile)
         {
-            var nuspecPath = Path.Combine(NugetFile.CorePropertiesRelPath, $"{CalcPsmdcpName()}.psmdcp");
+            var nuspecPath = Path.Combine(NuGetFile.CorePropertiesRelPath, $"{CalcPsmdcpName()}.psmdcp");
 
             var entry = nugetFile.CreateEntry(nuspecPath);
 
@@ -96,7 +96,7 @@ namespace NU.Core
         private static string CreatorInfo()
         {
             List<string> creatorInfo = new List<string>();
-            var assembly = typeof(NugetFile).GetTypeInfo().Assembly;
+            var assembly = typeof(NuGetFile).GetTypeInfo().Assembly;
             creatorInfo.Add(assembly.FullName);
 #if !IS_CORECLR // CORECLR_TODO: Environment.OSVersion
             creatorInfo.Add(Environment.OSVersion.ToString());

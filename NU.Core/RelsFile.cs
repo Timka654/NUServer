@@ -38,7 +38,7 @@ namespace NU.Core
 
         public void Write(string id, PsmdcpFile psmdcp, string dir)
         {
-            var filePath = new FileInfo(Path.Combine(dir, NugetFile.RelsFilePath));
+            var filePath = new FileInfo(Path.Combine(dir, NuGetFile.RelsFilePath));
 
             if (!filePath.Directory.Exists)
                 filePath.Directory.Create();
@@ -49,7 +49,7 @@ namespace NU.Core
 
         public void Write(string id, PsmdcpFile psmdcp, ZipArchive nugetFile)
         {
-            var entry = nugetFile.CreateEntry(NugetFile.RelsFilePath);
+            var entry = nugetFile.CreateEntry(NuGetFile.RelsFilePath);
 
             using (var file = entry.Open())
                 Write(id, psmdcp, file);
@@ -60,7 +60,7 @@ namespace NU.Core
             Data.Relationships.Clear();
 
             Data.Relationships.Add(CreateRelationship($"/{id}.nuspec", TypeExtensionMap["nuspec"]));
-            Data.Relationships.Add(CreateRelationship($"/{NugetFile.CorePropertiesRelPath}/{psmdcp.CalcPsmdcpName()}.psmdcp", TypeExtensionMap["psmdcp"]));
+            Data.Relationships.Add(CreateRelationship($"/{NuGetFile.CorePropertiesRelPath}/{psmdcp.CalcPsmdcpName()}.psmdcp", TypeExtensionMap["psmdcp"]));
 
             XmlSerializerNamespaces myNamespaces = Data.xmlns;
 

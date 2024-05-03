@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace NU.Core
 {
-    public class NugetFile : IDisposable
+    public class NuGetFile : IDisposable
     {
         internal const string RelsFilePath = "_rels/.rels";
 
@@ -26,13 +26,13 @@ namespace NU.Core
         public ContentTypesFile ContentTypesFile { get; protected set; }
 
 
-        public NugetFile(string path) : this(File.OpenRead(path)) { }
+        public NuGetFile(string path) : this(File.OpenRead(path)) { }
 
-        public NugetFile(byte[] data) : this(new MemoryStream(data)) { }
+        public NuGetFile(byte[] data) : this(new MemoryStream(data)) { }
 
-        public NugetFile(Stream path) : this(new ZipArchive(path)) { }
+        public NuGetFile(Stream path) : this(new ZipArchive(path)) { }
 
-        private NugetFile(ZipArchive archive)
+        private NuGetFile(ZipArchive archive)
         {
             nugetFile = archive;
 
@@ -45,7 +45,7 @@ namespace NU.Core
             ReadPsmdcpFile();
         }
 
-        public NugetFile(string packageName, string version, string authors)
+        public NuGetFile(string packageName, string version, string authors)
         {
             NUSpecFile = new NuSpecFile();
 

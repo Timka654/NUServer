@@ -75,9 +75,9 @@ namespace NU.Core
             }
         }
 
-        public void Write(string id, ZipArchive nugetFile)
+        public void Write(string id, ZipArchive NuGetFile)
         {
-            var entry = nugetFile.CreateEntry($"{id}.nuspec");
+            var entry = NuGetFile.CreateEntry($"{id}.nuspec");
 
             using (var file = entry.Open())
                 Write(file);

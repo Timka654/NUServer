@@ -2,7 +2,7 @@
 
 namespace NU.Core.Models.Response
 {
-    public class NugetIndexResponseModel
+    public class NuGetIndexResponseModel
     {
         public string Version { get; set; }
 

@@ -2,7 +2,7 @@
 
 namespace NU.Core.Models.Response
 {
-    public class NugetAutoCompleteResponseModel
+    public class NuGetAutoCompleteResponseModel
     {
         public int TotalHits { get; set; }
 

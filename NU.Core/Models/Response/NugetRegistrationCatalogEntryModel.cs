@@ -4,16 +4,16 @@ using System.Text.Json.Serialization;
 
 namespace NU.Core.Models.Response
 {
-    public class NugetRegistrationCatalogEntryModel
+    public class NuGetRegistrationCatalogEntryModel
     {
-        //"https://api.nuget.org/v3/catalog0/data/2017.10.05.18.41.33/nuget.server.core.3.0.0-beta.json"
+        //"https://api.NuGet.org/v3/catalog0/data/2017.10.05.18.41.33/NuGet.server.core.3.0.0-beta.json"
         [JsonPropertyName("@id")]
         public virtual string Url { get; set; }
 
         //".NET Foundation",
         public string Authors { get; set; }
 
-        public virtual List<NugetRegistrationCatalogDepedencyGroupModel> DependencyGroups { get; set; }
+        public virtual List<NuGetRegistrationCatalogDepedencyGroupModel> DependencyGroups { get; set; }
 
         //"Core library for creating a Web Application used to host a simple NuGet feed"
         public string Description { get; set; }
@@ -36,7 +36,7 @@ namespace NU.Core.Models.Response
         //"2.6",
         public string MinClientVersion { get; set; }
 
-        //"https://api.nuget.org/v3-flatcontainer/nuget.server.core/3.0.0-beta/nuget.server.core.3.0.0-beta.nupkg",
+        //"https://api.NuGet.org/v3-flatcontainer/NuGet.server.core/3.0.0-beta/NuGet.server.core.3.0.0-beta.nupkg",
         [JsonPropertyName("packageContent")]
         public virtual string PackageContentUrl { get; set; }
 
@@ -61,6 +61,6 @@ namespace NU.Core.Models.Response
         //"3.0.0-beta"
         public string Version { get; set; }
 
-        public List<NugetRegistrationCatalogVulnerabilitiesModel> Vulnerabilities { get; set; }
+        public List<NuGetRegistrationCatalogVulnerabilitiesModel> Vulnerabilities { get; set; }
     }
 }

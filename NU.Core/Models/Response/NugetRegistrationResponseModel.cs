@@ -2,10 +2,10 @@
 
 namespace NU.Core.Models.Response
 {
-    public class NugetRegistrationResponseModel
+    public class NuGetRegistrationResponseModel
     {
         public int Count => Items.Count;
 
-        public List<NugetRegistrationPageModel> Items { get; set; }
+        public List<NuGetRegistrationPageModel> Items { get; set; }
     }
 }

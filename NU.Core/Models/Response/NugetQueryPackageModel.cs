@@ -2,7 +2,7 @@
 
 namespace NU.Core.Models.Response
 {
-    public class NugetQueryPackageModel
+    public class NuGetQueryPackageModel
     {
         public virtual string Id { get; set; }
 
@@ -18,7 +18,7 @@ namespace NU.Core.Models.Response
 
         public virtual bool Verified { get; set; }
 
-        public virtual List<NugetQueryPackageVersionModel> Versions { get; set; }
+        public virtual List<NuGetQueryPackageVersionModel> Versions { get; set; }
 
         public virtual object[] PackageTypes { get; set; }
     }
