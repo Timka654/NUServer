@@ -3,7 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using NUServer.Api.Data;
+using NUServer.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -152,7 +152,7 @@ namespace NUServer.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.PackageModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -193,7 +193,7 @@ namespace NUServer.Migrations
                     b.ToTable("Packages");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.PackageVersionDependencyGroupModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionDependencyGroupModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -225,7 +225,7 @@ namespace NUServer.Migrations
                     b.ToTable("PackageVersionDependencyGroups");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.PackageVersionDependencyModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionDependencyModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -252,7 +252,7 @@ namespace NUServer.Migrations
                     b.ToTable("PackageVersionDependencies");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.PackageVersionModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionModel", b =>
                 {
                     b.Property<Guid>("PackageId")
                         .HasColumnType("uuid");
@@ -271,7 +271,7 @@ namespace NUServer.Migrations
                     b.ToTable("PackageVersions");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.ResourceModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.ResourceModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -298,7 +298,7 @@ namespace NUServer.Migrations
                     b.ToTable("Resources");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.UserModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.UserModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -323,6 +323,10 @@ namespace NUServer.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -380,7 +384,7 @@ namespace NUServer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
-                    b.HasOne("NUServer.Shared.UserModel", null)
+                    b.HasOne("NUServer.Shared.Models.UserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -389,7 +393,7 @@ namespace NUServer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
-                    b.HasOne("NUServer.Shared.UserModel", null)
+                    b.HasOne("NUServer.Shared.Models.UserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -404,7 +408,7 @@ namespace NUServer.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("NUServer.Shared.UserModel", null)
+                    b.HasOne("NUServer.Shared.Models.UserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -413,16 +417,16 @@ namespace NUServer.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("NUServer.Shared.UserModel", null)
+                    b.HasOne("NUServer.Shared.Models.UserModel", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.PackageModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageModel", b =>
                 {
-                    b.HasOne("NUServer.Shared.UserModel", "Author")
+                    b.HasOne("NUServer.Shared.Models.UserModel", "Author")
                         .WithMany("PackageList")
                         .HasForeignKey("AuthorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -431,15 +435,15 @@ namespace NUServer.Migrations
                     b.Navigation("Author");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.PackageVersionDependencyGroupModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionDependencyGroupModel", b =>
                 {
-                    b.HasOne("NUServer.Shared.DB.PackageModel", "Package")
+                    b.HasOne("NUServer.Shared.Models.PackageModel", "Package")
                         .WithMany()
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("NUServer.Shared.DB.PackageVersionModel", "PackageVersion")
+                    b.HasOne("NUServer.Shared.Models.PackageVersionModel", "PackageVersion")
                         .WithMany("DepedencyGroupList")
                         .HasForeignKey("PackageVersionPackageId", "PackageVersionVersion");
 
@@ -448,9 +452,9 @@ namespace NUServer.Migrations
                     b.Navigation("PackageVersion");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.PackageVersionDependencyModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionDependencyModel", b =>
                 {
-                    b.HasOne("NUServer.Shared.DB.PackageVersionDependencyGroupModel", "Group")
+                    b.HasOne("NUServer.Shared.Models.PackageVersionDependencyGroupModel", "Group")
                         .WithMany("Dependencies")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -459,9 +463,9 @@ namespace NUServer.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.PackageVersionModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionModel", b =>
                 {
-                    b.HasOne("NUServer.Shared.DB.PackageModel", "Package")
+                    b.HasOne("NUServer.Shared.Models.PackageModel", "Package")
                         .WithMany("VersionList")
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -470,22 +474,22 @@ namespace NUServer.Migrations
                     b.Navigation("Package");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.PackageModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageModel", b =>
                 {
                     b.Navigation("VersionList");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.PackageVersionDependencyGroupModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionDependencyGroupModel", b =>
                 {
                     b.Navigation("Dependencies");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.DB.PackageVersionModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionModel", b =>
                 {
                     b.Navigation("DepedencyGroupList");
                 });
 
-            modelBuilder.Entity("NUServer.Shared.UserModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.UserModel", b =>
                 {
                     b.Navigation("PackageList");
                 });

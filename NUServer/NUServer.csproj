@@ -25,10 +25,6 @@
 		<ProjectReference Include="..\NUServer.Shared\NUServer.Shared.Server.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Controllers\Api\Manage\" />
-	</ItemGroup>
-
 	<ProjectExtensions>
 		<VisualStudio>
 			<UserProperties />

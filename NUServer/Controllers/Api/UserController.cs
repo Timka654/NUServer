@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using NSL.ASPNET.Mvc.Route.Attributes;
-using NUServer.Api.Data;
-using NUServer.Api.Managers;
-using NUServer.Api.Utils.Filters;
-using NUServer.Shared.Request;
+using NUServer.Data;
+using NUServer.Managers;
+using NUServer.Shared.Models.Request;
+using NUServer.Utils.Filters;
 
 namespace NUServer.Controllers.Api
 {

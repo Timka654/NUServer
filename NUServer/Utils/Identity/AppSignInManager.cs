@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using NUServer.Shared;
+using NUServer.Shared.Models;
 
 namespace NUServer.Utils.Identity
 {

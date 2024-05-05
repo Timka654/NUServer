@@ -1,9 +1,9 @@
 ﻿#if SERVER
 
 using Microsoft.AspNetCore.Identity;
-using NUServer.Shared.DB;
+using NUServer.Shared.Models;
 
-namespace NUServer.Shared
+namespace NUServer.Shared.Models
 {
     public partial class UserModel: IdentityUser<Guid>
     {

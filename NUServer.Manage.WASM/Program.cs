@@ -37,4 +37,9 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 
 
-await builder.Build().RunAsync();
+var app = builder.Build();
+
+
+await app.Services.GetRequiredService<AppIdentityService>().LoadIdentity();
+
+await app.RunAsync();

@@ -1,8 +1,8 @@
 ﻿using NU.Core.Models.Response;
-using NUServer.Shared.DB;
+using NUServer.Shared.Models;
 using System.Text.Json.Serialization;
 
-namespace NUServer.Api.Models.Response
+namespace NUServer.Models.Response
 {
     public class NuGetRegistrationCatalogEntryServerModel : NuGetRegistrationCatalogEntryModel
     {

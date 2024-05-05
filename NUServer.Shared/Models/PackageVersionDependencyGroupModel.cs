@@ -1,4 +1,4 @@
-﻿namespace NUServer.Shared.DB
+﻿namespace NUServer.Shared.Models
 {
     public class PackageVersionDependencyGroupModel
     {

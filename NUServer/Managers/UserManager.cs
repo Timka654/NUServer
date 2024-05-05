@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NUServer.Api.Data;
-using NUServer.Shared;
-using NUServer.Shared.DB;
-using NUServer.Shared.Request;
+using NUServer.Data;
+using NUServer.Shared.Models;
+using NUServer.Shared.Models.Request;
 
-namespace NUServer.Api.Managers
+namespace NUServer.Managers
 {
     public class UserManager
     {
-        internal async Task<IActionResult> SignUp(ControllerContext context, Data.ApplicationDbContext db, SignUpRequestModel query)
+        internal async Task<IActionResult> SignUp(ControllerContext context, ApplicationDbContext db, SignUpRequestModel query)
         {
             var dbSet = db.Set<UserModel>();
 
@@ -27,13 +26,13 @@ namespace NUServer.Api.Managers
 
             do
             {
-                user.ShareToken = String.Join('-', Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+                user.ShareToken = string.Join('-', Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
 
             } while (await dbSet.AnyAsync(x => x.ShareToken == user.ShareToken));
 
             do
             {
-                user.PublishToken = String.Join('-', Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+                user.PublishToken = string.Join('-', Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
 
             } while (await dbSet.AnyAsync(x => x.PublishToken == user.PublishToken));
 
@@ -41,7 +40,7 @@ namespace NUServer.Api.Managers
 
             await db.SaveChangesAsync();
 
-            return new OkObjectResult(new { UID = user.Id, ShareToken = user.ShareToken, PublishToken = user.PublishToken });
+            return new OkObjectResult(new { UID = user.Id, user.ShareToken, user.PublishToken });
         }
 
         internal async Task<IActionResult> GetSharedToken(ControllerContext controllerContext, IUrlHelper url, ApplicationDbContext db, string userId)
@@ -53,7 +52,7 @@ namespace NUServer.Api.Managers
             return new ContentResult() { Content = url.Action("Get", "Package", new { user.ShareToken }, controllerContext.HttpContext.Request.Scheme) };
         }
 
-        public Task<bool> TryPublishSign(Data.ApplicationDbContext db, Guid userId, string token)
+        public Task<bool> TryPublishSign(ApplicationDbContext db, Guid userId, string token)
             => db.Set<UserModel>().AnyAsync(x => x.Id == userId && x.PublishToken == token);
     }
 }

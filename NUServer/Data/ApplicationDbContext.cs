@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using NUServer.Shared;
-using NUServer.Shared.DB;
+using NUServer.Shared.Models;
 
-namespace NUServer.Api.Data
+namespace NUServer.Data
 {
     public class ApplicationDbContext : IdentityDbContext<UserModel, IdentityRole<Guid>, Guid>
     {

@@ -1,6 +1,6 @@
 ﻿using NU.Core.Models.Response;
 
-namespace NUServer.Api.Models.Response
+namespace NUServer.Models.Response
 {
     public class NuGetQueryResponseServerModel : NuGetQueryResponseModel
     {

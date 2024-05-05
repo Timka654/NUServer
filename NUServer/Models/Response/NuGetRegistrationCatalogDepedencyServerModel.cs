@@ -1,9 +1,9 @@
 ﻿using NU.Core.Models.Response;
 using System.Text.Json.Serialization;
 using NuGet.Versioning;
-using NUServer.Shared.DB;
+using NUServer.Shared.Models;
 
-namespace NUServer.Api.Models.Response
+namespace NUServer.Models.Response
 {
     public class NuGetRegistrationCatalogDepedencyServerModel : NuGetRegistrationCatalogDepedencyModel
     {

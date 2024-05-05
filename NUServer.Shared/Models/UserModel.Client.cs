@@ -1,6 +1,6 @@
 ﻿#if CLIENT
 
-namespace NUServer.Shared
+namespace NUServer.Shared.Models
 {
     public partial class UserModel
     {

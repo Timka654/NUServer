@@ -1,15 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NUServer.Api.Data;
-using NUServer.Api.Models.Response;
 using NU.Core.Models.Response;
 using System.Net;
 using NU.Core;
 using NU.Core.Models;
-using NUServer.Shared.DB;
-using NUServer.Shared;
+using NUServer.Shared.Models;
+using NUServer.Data;
+using NUServer.Models.Response;
 
-namespace NUServer.Api.Managers
+namespace NUServer.Managers
 {
     public class PackageManager
     {
@@ -56,7 +55,7 @@ namespace NUServer.Api.Managers
 
         #region Publish
 
-        public async Task<IActionResult> PublishPackage(Microsoft.AspNetCore.Mvc.ControllerContext controllerContext, IUrlHelper url, Data.ApplicationDbContext dbContext, IFormFile packageFile, string uid)
+        public async Task<IActionResult> PublishPackage(ControllerContext controllerContext, IUrlHelper url, ApplicationDbContext dbContext, IFormFile packageFile, string uid)
         {
             var fileStream = packageFile.OpenReadStream();
 
@@ -84,7 +83,7 @@ namespace NUServer.Api.Managers
             });
         }
 
-        public async Task<IActionResult> PublishPackage(Microsoft.AspNetCore.Mvc.ControllerContext controllerContext, IUrlHelper url, Data.ApplicationDbContext dbContext, IFormFile[] packageFiles, string uid)
+        public async Task<IActionResult> PublishPackage(ControllerContext controllerContext, IUrlHelper url, ApplicationDbContext dbContext, IFormFile[] packageFiles, string uid)
         {
             var user = await dbContext.Set<UserModel>().FindAsync(Guid.Parse(uid));
 
@@ -328,7 +327,7 @@ namespace NUServer.Api.Managers
                   .Select(x => x.Name)
                   .ToListAsync()));
         }
-        internal async Task<IActionResult> GenerateNuGetIndex(Data.ApplicationDbContext dbContext, string shareToken)
+        internal async Task<IActionResult> GenerateNuGetIndex(ApplicationDbContext dbContext, string shareToken)
             => new OkObjectResult(new NuGetIndexResponseServerModel("3.0.0", await dbContext.Resources.Where(x => x.Active).Select(x => new IndexResourceModel
             {
                 Url = x.Url.Replace("{shareToken}", shareToken),

@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using NSL.ASPNET.Identity.Host;
-using NUServer.Api.Data;
-using NUServer.Shared;
+using NUServer.Data;
+using NUServer.Shared.Models;
 using NUServer.Utils.Identity;
 using System.Net;
 
 namespace NUServer
 {
-	internal partial class Program
+    internal partial class Program
 	{
 		private const string AdminRoleName = "PlatformAdministrator";
 		private const string AdminUserName = "admin@platform.admin";
@@ -79,7 +79,7 @@ namespace NUServer
 
 			if (user == null)
 			{
-				user = new UserModel() { Email = AdminUserName, UserName = AdminUserName };
+				user = new UserModel() { Email = AdminUserName, UserName = AdminUserName, Name = string.Empty };
 
 				var result = await userManager.CreateAsync(user, AdminPassword);
 

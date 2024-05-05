@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using NUServer.Api.Data;
-using NUServer.Api.Managers;
+using NUServer.Data;
+using NUServer.Managers;
 
-namespace NUServer.Api.Utils.Filters
+namespace NUServer.Utils.Filters
 {
     public class PublishSignFilterAttribute : Attribute, IAsyncActionFilter
     {
@@ -13,7 +13,7 @@ namespace NUServer.Api.Utils.Filters
             var dbContext = context.HttpContext.RequestServices.GetRequiredService<ApplicationDbContext>();
 
             if (!context.HttpContext.Request.Headers.TryGetValue("signToken", out var tokens) ||
-                !context.HttpContext.Request.Headers.TryGetValue("uid", out var uids) || 
+                !context.HttpContext.Request.Headers.TryGetValue("uid", out var uids) ||
                 !Guid.TryParse(uids.First(), out var uid) ||
                 !await userManager.TryPublishSign(dbContext, uid, tokens.First())
                 )

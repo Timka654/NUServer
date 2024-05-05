@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using NSL.ASPNET.Identity.Host;
-using NUServer.Api.Data;
-using NUServer.Api.Managers;
+using NUServer.Data;
+using NUServer.Managers;
 using System.Text.Json.Serialization;
 
 namespace NUServer

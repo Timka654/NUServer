@@ -1,0 +1,6 @@
+﻿<EditForm AdditionalAttributes="AdditionalAttributes" Model="Model" OnValidSubmit="()=> OnSubmit.InvokeAsync(this)">
+    <NSL.HttpClient.Blazor.Validators.ServerModelValidator @ref="ApiValidator"></NSL.HttpClient.Blazor.Validators.ServerModelValidator>
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+
+    @ChildContent(this)
+</EditForm>
