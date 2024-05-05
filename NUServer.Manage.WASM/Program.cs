@@ -21,6 +21,7 @@ builder.Services.AddHttpClient("Default", (sp, client) => client.FillHttpClientI
 })
 .AddHttpMessageIdentityHandler();
 
+builder.Services.AddBlazorBootstrap();
 builder.Services.AddBlazoredLocalStorageAsSingleton();
 
 builder.Services
@@ -28,11 +29,12 @@ builder.Services
     .AddHttpMessageIdentityHandler()
     .AddIdentityStateProvider<IdentityStateProvider>()
     .AddIdentityService<AppIdentityService>()
-    .AddIdentityAuthorizationService<IdentityAuthorizationService>();
+    .AddIdentityAuthorizationService<IdentityAuthorizationService>(); 
+
 
 builder.RootComponents.Add<Routes>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
 
 await builder.Build().RunAsync();

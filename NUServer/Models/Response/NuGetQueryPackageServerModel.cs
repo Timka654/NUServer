@@ -17,7 +17,7 @@ namespace NUServer.Api.Models.Response
 
         public override string Version => Data.LatestVersion;
 
-        public override string[] Authors => new string[] { Data.AvtorName };
+        public override string[] Authors => new string[] { Data.AuthorName };
 
         public override long TotalDownloads => Data.DownloadCount;
 

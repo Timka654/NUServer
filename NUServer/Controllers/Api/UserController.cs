@@ -5,7 +5,7 @@ using NUServer.Api.Managers;
 using NUServer.Api.Utils.Filters;
 using NUServer.Shared.Request;
 
-namespace NUServer.Api.Controllers
+namespace NUServer.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]

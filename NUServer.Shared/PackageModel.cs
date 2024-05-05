@@ -8,15 +8,15 @@
 
         public string Description { get; set; }
 
-        public string AvtorName { get; set; }
+        public string AuthorName { get; set; }
 
-        public Guid AvtorId { get; set; }
+        public Guid AuthorId { get; set; }
 
-        public UserModel Avtor { get; set; }
+        public UserModel Author { get; set; }
 
         public string LatestVersion { get; set; }
 
-        public virtual List<PackageVersionModel> VersionList { get; set; }
+        public virtual List<PackageVersionModel>? VersionList { get; set; }
 
         public bool Private { get; set; }
 

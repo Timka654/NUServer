@@ -4,7 +4,7 @@ using NUServer.Api.Data;
 using NUServer.Api.Managers;
 using NUServer.Api.Utils.Filters;
 
-namespace NUServer.Api.Controllers
+namespace NUServer.Controllers.Api
 {
     [Route("api/[controller]")]
     [ApiController]

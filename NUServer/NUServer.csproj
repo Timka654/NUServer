@@ -8,6 +8,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.4" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.4" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
@@ -22,6 +23,10 @@
 		<ProjectReference Include="..\NU.Core\NU.Core.csproj" />
 		<ProjectReference Include="..\NUServer.Manage.WASM\NUServer.Manage.WASM.csproj" />
 		<ProjectReference Include="..\NUServer.Shared\NUServer.Shared.Server.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Controllers\Api\Manage\" />
 	</ItemGroup>
 
 	<ProjectExtensions>

@@ -2,10 +2,8 @@
 
 namespace NUServer.Shared.Request
 {
-    public class SignUpRequestModel
+    public class SignInRequestModel
     {
-        public string Name { get; set; }
-
         [EmailAddress]
         public string Email { get; set; }
 

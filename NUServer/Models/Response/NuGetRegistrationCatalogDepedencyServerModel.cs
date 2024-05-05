@@ -13,11 +13,11 @@ namespace NUServer.Api.Models.Response
         [JsonPropertyName("id")]
         public override string Name { get; set; }
 
-        public NuGetRegistrationCatalogDepedencyServerModel(PackageVersionDepedencyModel x, PackageModel package, PackageVersionModel version, Func<string, string?, string> registrationUrl)
+        public NuGetRegistrationCatalogDepedencyServerModel(PackageVersionDependencyModel x, PackageModel package, PackageVersionModel version, Func<string, string?, string> registrationUrl)
         {
-            Registration = registrationUrl(x.DepedencyName, version.Version);
-            Name = x.DepedencyName;
-            Range = VersionRange.Parse(x.DepedencyVersion).ToString();
+            Registration = registrationUrl(x.DependencyName, version.Version);
+            Name = x.DependencyName;
+            Range = VersionRange.Parse(x.DependencyVersion).ToString();
         }
     }
 }

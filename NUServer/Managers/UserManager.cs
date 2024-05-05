@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NUServer.Api.Data;
+using NUServer.Shared;
 using NUServer.Shared.DB;
 using NUServer.Shared.Request;
 
@@ -12,7 +13,7 @@ namespace NUServer.Api.Managers
         {
             var dbSet = db.Set<UserModel>();
 
-            if (await dbSet.AnyAsync(x => x.Name.ToLower().Equals(query.Name.ToLower())))
+            if (await dbSet.AnyAsync(x => x.UserName.ToLower().Equals(query.Name.ToLower())))
             {
                 context.ModelState.AddModelError(nameof(query.Name), "Name already exists");
                 return new BadRequestObjectResult(context.ModelState);
@@ -20,7 +21,7 @@ namespace NUServer.Api.Managers
 
             var user = new UserModel()
             {
-                Name = query.Name,
+                UserName = query.Name,
                 Email = query.Email,
             };
 

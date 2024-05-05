@@ -9,10 +9,10 @@ namespace NUServer.Api.Models.Response
         [JsonPropertyName("@id")]
         public override string Url { get; set; }
 
-        public NuGetRegistrationCatalogDependencyGroupServerModel(PackageModel package, PackageVersionModel version, PackageVersionDepedencyGroupModel group, Func<string, string?, string> registrationUrl)
+        public NuGetRegistrationCatalogDependencyGroupServerModel(PackageModel package, PackageVersionModel version, PackageVersionDependencyGroupModel group, Func<string, string?, string> registrationUrl)
         {
             TargetFramework = group.TargetFramework;
-            Dependencies = new List<NuGetRegistrationCatalogDepedencyModel>(group.Depedencies.Select(x => new NuGetRegistrationCatalogDepedencyServerModel(x, package, version, registrationUrl)));
+            Dependencies = new List<NuGetRegistrationCatalogDepedencyModel>(group.Dependencies.Select(x => new NuGetRegistrationCatalogDepedencyServerModel(x, package, version, registrationUrl)));
         }
     }
 }

@@ -14,7 +14,7 @@ namespace NUServer.Api.Models.Response
 
         public NuGetRegistrationCatalogEntryServerModel(PackageModel package, PackageVersionModel version, Func<string, string?, string> registrationUrl, Func<string, string?, string> nupkgUrl)
         {
-            Authors = package.Avtor.Name;
+            Authors = package.Author.UserName;
             Description = package.Description;
             Id = package.Name;
 
