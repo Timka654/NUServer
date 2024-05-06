@@ -28,8 +28,6 @@ namespace NUServer
 
             builder.Services.AddDbContext<ApplicationDbContext>(c => c.UseNpgsql(builder.Configuration.GetConnectionString("db")));
 
-            builder.Services.add
-
             builder.Services.AddSingleton<PackageManager>();
 
             builder.Services.AddSingleton<UserManager>();
