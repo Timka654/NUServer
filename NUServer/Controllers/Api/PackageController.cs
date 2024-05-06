@@ -2,7 +2,9 @@
 using NSL.ASPNET.Mvc.Route.Attributes;
 using NUServer.Data;
 using NUServer.Managers;
+using NUServer.Shared.Models;
 using NUServer.Utils.Filters;
+using System;
 
 namespace NUServer.Controllers.Api
 {
@@ -23,8 +25,21 @@ namespace NUServer.Controllers.Api
         [PublishSignFilter]
         [DisableRequestSizeLimit]
         public async Task<IActionResult> Publish([FromForm(Name = "package")] IFormFile[] package, [FromHeader(Name = "uid")] string userId)
-            => await packageManager.PublishPackage(ControllerContext, Url, dbContext, package, userId);
+        {
+            var user = await dbContext.Users.FindAsync(Guid.Parse(userId));
 
+            var result = await packageManager.PublishPackage(dbContext, package, user);
+
+            if (result == null)
+                return Ok(new
+                {
+                    ShareUrl = Url.Action("Get", "Package", new { user.ShareToken }, HttpContext.Request.Scheme)
+                });
+
+            ModelState.AddModelError(result.ErrorField, result.ErrorMessage);
+
+            return BadRequest(ModelState);
+        }
         //https://docs.microsoft.com/en-us/NuGet/api/service-index
         [HttpGet("{shareToken}/v3/index.json")]
         public async Task<IActionResult> Get(string shareToken)

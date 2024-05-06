@@ -41,7 +41,7 @@ namespace NUServer.Controllers.Api.Manage
             if (await signInManager.UserManager.Users.AnyAsync(x => x.Name.ToLower() == query.Name.ToLower()))
                 return this.ModelStateResponse($"User {query.Name} already exists");
 
-            var u = new UserModel() { Email = query.Email, UserName = query.Email, Name = query.Name };
+            var u = new UserModel() { Email = query.Email, UserName = query.Email };
 
             query.FillTo(u);
 

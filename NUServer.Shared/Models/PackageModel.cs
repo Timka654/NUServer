@@ -1,12 +1,16 @@
-﻿namespace NUServer.Shared.Models
+﻿using NSL.Generators.SelectTypeGenerator.Attributes;
+
+namespace NUServer.Shared.Models
 {
-    public class PackageModel
+    [SelectGenerate("Get", "GetDetails")]
+    [SelectGenerateModelJoin("GetDetails", "Get")]
+    public partial class PackageModel
     {
-        public Guid Id { get; set; }
+        [SelectGenerateInclude("Get")]public Guid Id { get; set; }
 
-        public string Name { get; set; }
+        [SelectGenerateInclude("Get")] public string Name { get; set; }
 
-        public string Description { get; set; }
+        [SelectGenerateInclude("GetDetails")] public string Description { get; set; }
 
         public string AuthorName { get; set; }
 
@@ -14,14 +18,14 @@
 
         public UserModel Author { get; set; }
 
-        public string LatestVersion { get; set; }
+        [SelectGenerateInclude("Get")] public string LatestVersion { get; set; }
 
-        public virtual List<PackageVersionModel>? VersionList { get; set; }
+        [SelectGenerateInclude("GetDetails")] public virtual List<PackageVersionModel>? VersionList { get; set; }
 
-        public bool Private { get; set; }
+        [SelectGenerateInclude("Get")] public bool Private { get; set; }
 
-        public long DownloadCount { get; set; }
+        [SelectGenerateInclude("Get")] public long DownloadCount { get; set; }
 
-        public DateTime Published { get; set; }
+        [SelectGenerateInclude("Get")] public DateTime Published { get; set; }
     }
 }

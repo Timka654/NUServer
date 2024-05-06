@@ -10,9 +10,9 @@ namespace NUServer.Managers
     {
         internal async Task<IActionResult> SignUp(ControllerContext context, ApplicationDbContext db, SignUpRequestModel query)
         {
-            var dbSet = db.Set<UserModel>();
+            var dbSet = db.Users;
 
-            if (await dbSet.AnyAsync(x => x.UserName.ToLower().Equals(query.Name.ToLower())))
+            if (await dbSet.AnyAsync(x => x.Name.ToLower().Equals(query.Name.ToLower())))
             {
                 context.ModelState.AddModelError(nameof(query.Name), "Name already exists");
                 return new BadRequestObjectResult(context.ModelState);
@@ -20,8 +20,9 @@ namespace NUServer.Managers
 
             var user = new UserModel()
             {
-                UserName = query.Name,
+                Name = query.Name,
                 Email = query.Email,
+                UserName = query.Email,
             };
 
             do
@@ -47,12 +48,12 @@ namespace NUServer.Managers
         {
             var guid = Guid.Parse(userId);
 
-            var user = await db.Set<UserModel>().FindAsync(guid);
+            var user = await db.Users.FindAsync(guid);
 
             return new ContentResult() { Content = url.Action("Get", "Package", new { user.ShareToken }, controllerContext.HttpContext.Request.Scheme) };
         }
 
         public Task<bool> TryPublishSign(ApplicationDbContext db, Guid userId, string token)
-            => db.Set<UserModel>().AnyAsync(x => x.Id == userId && x.PublishToken == token);
+            => db.Users.AnyAsync(x => x.Id == userId && x.PublishToken == token);
     }
 }

@@ -23,6 +23,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="NSL.Database.EntityFramework.Filter" Version="2024.5.4.204" />
 	  <PackageReference Include="NSL.Generators.FillTypeGenerator" Version="2024.5.4.204" />
 	  <PackageReference Include="NSL.Generators.FillTypeGenerator.Attributes" Version="2024.5.4.204" />
 	  <PackageReference Include="NSL.Generators.HttpEndPointGenerator.Shared" Version="2024.5.4.204" />

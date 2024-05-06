@@ -3,6 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using NSL.ASPNET.Identity.Host;
 using NSL.ASPNET.Mvc;
 using NSL.ASPNET.Mvc.Route.Attributes;
+using NSL.Database.EntityFramework.Filter;
+using NSL.Database.EntityFramework.Filter.Host;
+using NSL.Database.EntityFramework.Filter.Models;
+using NUServer.Data;
+using NUServer.Managers;
 using NUServer.Shared.Models;
 using NUServer.Shared.Models.Controllers;
 using NUServer.Shared.Models.Request;
@@ -12,51 +17,88 @@ namespace NUServer.Controllers.Api.Manage
 {
     [Route("api/manage/[controller]")]
     [ApiController]
-    public class ManagePackagesController(AppSignInManager signInManager, IConfiguration configuration) : ControllerBase, IManagePackagesController
+    public class ManagePackagesController(ApplicationDbContext dbContext
+        , PackageManager packageManager) : ControllerBase, IManagePackagesController
     {
-
         [HttpPostAction]
-        public async Task<IActionResult> SignIn([FromBody] SignInRequestModel query)
-        => await this.ProcessRequestAsync(async () =>
-            {
-                var u = await signInManager.UserManager.FindByEmailAsync(query.Email);
-
-                if (u == null)
-                    return this.ModelStateResponse("User not found");
-
-                if (!await signInManager.UserManager.CheckPasswordAsync(u, query.Password))
-                    return this.ModelStateResponse("User not found");
-
-                var token = u.GenerateClaims((_u, claims) =>
-                {
-                }).GenerateJWT(configuration);
-
-                return this.DataResponse(new { token });
-            });
-
-        [HttpPostAction]
-        public async Task<IActionResult> SignUp([FromBody] SignUpRequestModel query)
+        public async Task<IActionResult> Get([FromBody] BaseFilteredQueryModel query)
         => await this.ProcessRequestAsync(async () =>
         {
-            if (await signInManager.UserManager.Users.AnyAsync(x => x.Name.ToLower() == query.Name.ToLower()))
-                return this.ModelStateResponse($"User {query.Name} already exists");
+            var uid = User.GetUserId();
 
-            var u = new UserModel() { Email = query.Email, UserName = query.Email, Name = query.Name };
+            return this.DataResponse(await dbContext.Packages
+                .Filter(q => q.Where(x => x.AuthorId == uid), query)
+                .ToDataResultAsync(s => s.SelectGet()));
+        });
 
-            query.FillTo(u);
+        [HttpPostAction]
+        public async Task<IActionResult> Details([FromBody] Guid query)
+        => await this.ProcessRequestAsync(async () =>
+        {
+            var uid = User.GetUserId();
 
-            var r = await signInManager.UserManager.CreateAsync(u, query.Password);
+            var data = await dbContext.Packages
+            .Include(x => x.VersionList)
+            .Where(x => x.AuthorId == uid && x.Id == query)
+            .SelectGetDetails()
+            .FirstOrDefaultAsync();
 
-            if (!r.Succeeded)
-            {
-                return this.ModelStateResponse(r.Errors.Select(x => x.Description).ToArray());
-            }
+            if (data == null)
+                return this.NotFoundResponse();
 
-            var token = u.GenerateClaims((_u, claims) =>
-            {
-            }).GenerateJWT(configuration);
+            return this.DataResponse((object)data);
+        });
 
-            return this.DataResponse(new { token });
+        [HttpPostAction]
+        public async Task<IActionResult> UploadPackage([FromForm] IFormFile query)
+        => await this.ProcessRequestAsync(async () =>
+        {
+            var uid = User.GetUserId();
+
+            var user = await dbContext.Users.FindAsync(uid.Value);
+
+            var result = await packageManager.PublishPackage(dbContext, query, user);
+
+            if (result.Package == null)
+                return this.ModelStateResponse(result.ErrorField, result.ErrorMessage);
+
+            return this.DataResponse((object)await dbContext.Packages
+                .Where(x => x.AuthorId == uid && x.Id == result.Package.Id)
+                .SelectGet()
+                .FirstOrDefaultAsync());
+        });
+
+        [HttpPostAction]
+        public async Task<IActionResult> RemoveVersion([FromForm] RemovePackageVersionRequestModel query)
+        => await this.ProcessRequestAsync(async () =>
+        {
+            var uid = User.GetUserId();
+
+            await dbContext.PackageVersions
+            .Include(x => x.Package)
+            .Where(x =>
+            x.Package.AuthorId == uid.Value
+            && x.PackageId == query.PackageId
+            && x.Version == query.PackageVersion)
+            .ExecuteDeleteAsync();
+
+
+            return Ok();
+        });
+
+        [HttpPostAction]
+        public async Task<IActionResult> Remove([FromForm] Guid query)
+        => await this.ProcessRequestAsync(async () =>
+        {
+            var uid = User.GetUserId();
+
+            await dbContext.Packages
+            .Where(x =>
+            x.AuthorId == uid.Value
+            && x.Id == query)
+            .ExecuteDeleteAsync();
+
+            return Ok();
         });
     }
 }

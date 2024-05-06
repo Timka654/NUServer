@@ -12,9 +12,5 @@ namespace NUServer.Shared.Models.Controllers
     [HttpEndPointContainerGenerate("api/manage/[controller]")]
     public interface IManagePackagesController
     {
-
-        [HttpEndPointGenerate(typeof(DataResponse<SignResponseModel>))] Task<IActionResult> SignIn([FromBody] SignInRequestModel query);
-
-        [HttpEndPointGenerate(typeof(DataResponse<SignResponseModel>))] Task<IActionResult> SignUp([FromBody] SignUpRequestModel query);
     }
 }

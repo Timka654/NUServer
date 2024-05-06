@@ -17,6 +17,7 @@
 		<PackageReference Include="NSL.ASPNET" Version="2024.5.4.204" />
 		<PackageReference Include="NSL.ASPNET.Identity.Host" Version="2024.5.4.204" />
 		<PackageReference Include="NSL.ASPNET.Mvc" Version="2024.5.4.204" />
+		<PackageReference Include="NSL.Database.EntityFramework.Filter.Host.ASPNET" Version="2024.5.4.204" />
 	</ItemGroup>
 
 	<ItemGroup>

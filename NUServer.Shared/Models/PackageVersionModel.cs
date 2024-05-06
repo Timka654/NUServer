@@ -1,4 +1,6 @@
-﻿namespace NUServer.Shared.Models
+﻿using NSL.Generators.SelectTypeGenerator.Attributes;
+
+namespace NUServer.Shared.Models
 {
     public class PackageVersionModel
     {
@@ -6,12 +8,12 @@
 
         public virtual PackageModel? Package { get; set; }
 
-        public string Version { get; set; }
+        [SelectGenerateInclude("GetDetails")] public string Version { get; set; }
 
-        public DateTime UploadTime { get; set; }
+        [SelectGenerateInclude("GetDetails")] public DateTime UploadTime { get; set; }
 
-        public long DownloadCount { get; set; }
+        [SelectGenerateInclude("GetDetails")] public long DownloadCount { get; set; }
 
-        public virtual List<PackageVersionDependencyGroupModel>? DepedencyGroupList { get; set; }
+        public virtual List<PackageVersionDependencyGroupModel>? DependencyGroupList { get; set; }
     }
 }
