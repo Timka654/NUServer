@@ -3,12 +3,12 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using NUServer.Api.Data;
+using NUServer.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace NUServer.Api.Migrations
+namespace NUServer.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot
@@ -17,12 +17,39 @@ namespace NUServer.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.3")
+                .HasAnnotation("ProductVersion", "8.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("NUServer.Models.DB.ResourceDBModel", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -30,36 +57,111 @@ namespace NUServer.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Comment")
-                        .IsRequired()
+                    b.Property<string>("ClaimType")
                         .HasColumnType("text");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
+                    b.Property<string>("ClaimValue")
                         .HasColumnType("text");
 
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.ToTable("ResourceSet");
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("NUServer.Models.PackageModel", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("text");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("NUServer.Shared.Models.PackageModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("AvtorId")
+                    b.Property<Guid>("AuthorId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("AvtorName")
+                    b.Property<string>("AuthorName")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -86,12 +188,12 @@ namespace NUServer.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AvtorId");
+                    b.HasIndex("AuthorId");
 
-                    b.ToTable("PackageSet");
+                    b.ToTable("Packages");
                 });
 
-            modelBuilder.Entity("NUServer.Models.PackageVersionDepedencyGroupModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionDependencyGroupModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -100,11 +202,10 @@ namespace NUServer.Api.Migrations
                     b.Property<Guid>("PackageId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("PackageVersionPackageId")
+                    b.Property<Guid?>("PackageVersionPackageId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("PackageVersionVersion")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("TargetFramework")
@@ -121,20 +222,20 @@ namespace NUServer.Api.Migrations
 
                     b.HasIndex("PackageVersionPackageId", "PackageVersionVersion");
 
-                    b.ToTable("PackageVersionDepedencyGroupModel");
+                    b.ToTable("PackageVersionDependencyGroups");
                 });
 
-            modelBuilder.Entity("NUServer.Models.PackageVersionDepedencyModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionDependencyModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("DepedencyName")
+                    b.Property<string>("DependencyName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("DepedencyVersion")
+                    b.Property<string>("DependencyVersion")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -148,10 +249,10 @@ namespace NUServer.Api.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("PackageVersionDepedencyModel");
+                    b.ToTable("PackageVersionDependencies");
                 });
 
-            modelBuilder.Entity("NUServer.Models.PackageVersionModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionModel", b =>
                 {
                     b.Property<Guid>("PackageId")
                         .HasColumnType("uuid");
@@ -167,70 +268,194 @@ namespace NUServer.Api.Migrations
 
                     b.HasKey("PackageId", "Version");
 
-                    b.ToTable("PackageVersionSet");
+                    b.ToTable("PackageVersions");
                 });
 
-            modelBuilder.Entity("NUServer.Models.UserModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.ResourceModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Comment")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Type")
+                        .HasColumnType("text")
+                        .HasAnnotation("Relational:JsonPropertyName", "@type");
+
+                    b.Property<string>("Url")
+                        .HasColumnType("text")
+                        .HasAnnotation("Relational:JsonPropertyName", "@id");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Resources");
+                });
+
+            modelBuilder.Entity("NUServer.Shared.Models.UserModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Email")
-                        .IsRequired()
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
                         .HasColumnType("text");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("PublishToken")
-                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("SecurityStamp")
                         .HasColumnType("text");
 
                     b.Property<string>("ShareToken")
-                        .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("UserSet");
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex");
+
+                    b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("NUServer.Models.PackageModel", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("NUServer.Models.UserModel", "Avtor")
-                        .WithMany("PackageList")
-                        .HasForeignKey("AvtorId")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+                {
+                    b.HasOne("NUServer.Shared.Models.UserModel", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+                {
+                    b.HasOne("NUServer.Shared.Models.UserModel", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Avtor");
+                    b.HasOne("NUServer.Shared.Models.UserModel", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("NUServer.Models.PackageVersionDepedencyGroupModel", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.HasOne("NUServer.Models.PackageModel", "Package")
+                    b.HasOne("NUServer.Shared.Models.UserModel", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("NUServer.Shared.Models.PackageModel", b =>
+                {
+                    b.HasOne("NUServer.Shared.Models.UserModel", "Author")
+                        .WithMany("PackageList")
+                        .HasForeignKey("AuthorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Author");
+                });
+
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionDependencyGroupModel", b =>
+                {
+                    b.HasOne("NUServer.Shared.Models.PackageModel", "Package")
                         .WithMany()
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("NUServer.Models.PackageVersionModel", "PackageVersion")
+                    b.HasOne("NUServer.Shared.Models.PackageVersionModel", "PackageVersion")
                         .WithMany("DepedencyGroupList")
-                        .HasForeignKey("PackageVersionPackageId", "PackageVersionVersion")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PackageVersionPackageId", "PackageVersionVersion");
 
                     b.Navigation("Package");
 
                     b.Navigation("PackageVersion");
                 });
 
-            modelBuilder.Entity("NUServer.Models.PackageVersionDepedencyModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionDependencyModel", b =>
                 {
-                    b.HasOne("NUServer.Models.PackageVersionDepedencyGroupModel", "Group")
-                        .WithMany("Depedencies")
+                    b.HasOne("NUServer.Shared.Models.PackageVersionDependencyGroupModel", "Group")
+                        .WithMany("Dependencies")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -238,9 +463,9 @@ namespace NUServer.Api.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("NUServer.Models.PackageVersionModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionModel", b =>
                 {
-                    b.HasOne("NUServer.Models.PackageModel", "Package")
+                    b.HasOne("NUServer.Shared.Models.PackageModel", "Package")
                         .WithMany("VersionList")
                         .HasForeignKey("PackageId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -249,22 +474,22 @@ namespace NUServer.Api.Migrations
                     b.Navigation("Package");
                 });
 
-            modelBuilder.Entity("NUServer.Models.PackageModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageModel", b =>
                 {
                     b.Navigation("VersionList");
                 });
 
-            modelBuilder.Entity("NUServer.Models.PackageVersionDepedencyGroupModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionDependencyGroupModel", b =>
                 {
-                    b.Navigation("Depedencies");
+                    b.Navigation("Dependencies");
                 });
 
-            modelBuilder.Entity("NUServer.Models.PackageVersionModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.PackageVersionModel", b =>
                 {
                     b.Navigation("DepedencyGroupList");
                 });
 
-            modelBuilder.Entity("NUServer.Models.UserModel", b =>
+            modelBuilder.Entity("NUServer.Shared.Models.UserModel", b =>
                 {
                     b.Navigation("PackageList");
                 });

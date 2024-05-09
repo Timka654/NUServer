@@ -1,7 +1,7 @@
 ﻿using NU.Core.Models;
 using NU.Core.Models.Response;
 
-namespace NUServer.Api.Models.Response
+namespace NUServer.Models.Response
 {
     public class NuGetIndexResponseServerModel : NuGetIndexResponseModel
     {

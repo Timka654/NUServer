@@ -1,12 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace NUServer.Shared.Request
+namespace NUServer.Shared.Models.Request
 {
-    public class SignUpRequestModel
+    public class SignInRequestModel
     {
-        public string Name { get; set; }
-
         [EmailAddress]
         public string Email { get; set; }
+
+        public string Password { get; set; }
     }
 }

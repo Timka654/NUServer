@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NUServer.Shared", "NUServer
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NUServer.Shared.Server", "NUServer.Shared\NUServer.Shared.Server.csproj", "{B1BF3456-5C60-48A5-883F-EA7795C2BBFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NUServer.Manage.WASM", "NUServer.Manage.WASM\NUServer.Manage.WASM.csproj", "{3E3421B1-49E5-45DF-A44D-AD7C43DA8FA0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NUServer.Manage.WASM", "NUServer.Manage.WASM\NUServer.Manage.WASM.csproj", "{3E3421B1-49E5-45DF-A44D-AD7C43DA8FA0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

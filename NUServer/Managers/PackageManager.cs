@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using NUServer.Api.Data;
-using NUServer.Api.Models.Response;
 using NU.Core.Models.Response;
 using System.Net;
 using NU.Core;
 using NU.Core.Models;
-using NUServer.Shared.DB;
+using NUServer.Shared.Models;
+using NUServer.Data;
+using NUServer.Models.Response;
+using NUServer.Models;
 
-namespace NUServer.Api.Managers
+namespace NUServer.Managers
 {
     public class PackageManager
     {
@@ -55,40 +56,28 @@ namespace NUServer.Api.Managers
 
         #region Publish
 
-        public async Task<IActionResult> PublishPackage(Microsoft.AspNetCore.Mvc.ControllerContext controllerContext, IUrlHelper url, Data.ApplicationDbContext dbContext, IFormFile packageFile, string uid)
+        public async Task<PublishPackageResultModel?> PublishPackage(ApplicationDbContext dbContext, IFormFile packageFile, UserModel user)
         {
             var fileStream = packageFile.OpenReadStream();
 
             var nuPkg = new NuGetFile(fileStream);
 
-            var user = await dbContext.Set<UserModel>().FindAsync(Guid.Parse(uid));
+            var result = new PublishPackageResultModel();
 
-            var dbSet = dbContext.Set<PackageModel>();
+            await PublishPackage(result, dbContext, user, nuPkg);
 
-            var result = await PublishPackage(controllerContext, dbContext, dbSet, user, nuPkg);
-
-            if (result != null)
+            if (result.Package != null)
             {
-                nuPkg.Dispose();
-                return result;
+                await dbContext.SaveChangesAsync();
+
+                await ProducePackage(nuPkg, fileStream);
             }
 
-            await dbContext.SaveChangesAsync();
-
-            await ProducePackage(nuPkg, fileStream);
-
-            return new OkObjectResult(new
-            {
-                ShareUrl = url.Action("Get", "Package", new { user.ShareToken }, controllerContext.HttpContext.Request.Scheme)
-            });
+            return result;
         }
 
-        public async Task<IActionResult> PublishPackage(Microsoft.AspNetCore.Mvc.ControllerContext controllerContext, IUrlHelper url, Data.ApplicationDbContext dbContext, IFormFile[] packageFiles, string uid)
+        public async Task<PublishPackageResultModel?> PublishPackage(ApplicationDbContext dbContext, IFormFile[] packageFiles, UserModel user)
         {
-            var user = await dbContext.Set<UserModel>().FindAsync(Guid.Parse(uid));
-
-            var dbSet = dbContext.Set<PackageModel>();
-
             List<(NuGetFile file, Stream stream)> packages = new();
 
             foreach (var packageFile in packageFiles)
@@ -99,9 +88,11 @@ namespace NUServer.Api.Managers
 
                 packages.Add((nuPkg, fileStream));
 
-                var result = await PublishPackage(controllerContext, dbContext, dbSet, user, nuPkg);
+                var result = new PublishPackageResultModel();
 
-                if (result != null)
+                await PublishPackage(result, dbContext, user, nuPkg);
+
+                if (result.Package == null)
                 {
                     foreach (var item in packages)
                     {
@@ -121,28 +112,29 @@ namespace NUServer.Api.Managers
                 await ProducePackage(package.file, package.stream);
             }
 
-            return new OkObjectResult(new
-            {
-                ShareUrl = url.Action("Get", "Package", new { user.ShareToken }, controllerContext.HttpContext.Request.Scheme)
-            });
+            return null;
         }
 
-        private async Task<IActionResult> PublishPackage(ControllerContext controllerContext, ApplicationDbContext dbContext, DbSet<PackageModel> dbSet, UserModel user, NuGetFile nuPkg)
+        private async Task PublishPackage(PublishPackageResultModel result, ApplicationDbContext dbContext, UserModel user, NuGetFile nuPkg)
         {
             if (nuPkg.Authors != user.Name)
             {
-                controllerContext.ModelState.AddModelError(nameof(nuPkg.Authors), $"You package({nuPkg.Id}) author({nuPkg.Authors}) not equals you user name({user.Name})");
+                result.ErrorField = nameof(nuPkg.Authors);
+                result.ErrorMessage = $"You package({nuPkg.Id}) author({nuPkg.Authors}) not equals you user name({user.Name})";
 
-                return new BadRequestObjectResult(controllerContext.ModelState);
+                return;
             }
 
-            var package = await dbSet.FirstOrDefaultAsync(x => x.Name.ToLower() == nuPkg.Id.ToLower());
+            var package = await dbContext.Packages
+                .Include(x => x.VersionList)
+                .FirstOrDefaultAsync(x => x.Name.ToLower() == nuPkg.Id.ToLower());
 
-            if (package != null && package.AvtorId != user.Id)
+            if (package != null && package.AuthorId != user.Id)
             {
-                controllerContext.ModelState.AddModelError(nameof(package.AvtorId), $"You not have access for publish package {package.Id}");
+                result.ErrorField = nameof(package.AuthorId);
+                result.ErrorMessage = $"You not have access for publish package {package.Id}";
 
-                return new BadRequestObjectResult(controllerContext.ModelState);
+                return;
             }
 
             if (package == null)
@@ -150,46 +142,51 @@ namespace NUServer.Api.Managers
                 package = new PackageModel()
                 {
                     Name = nuPkg.Id,
-                    AvtorId = user.Id,
-                    AvtorName = user.Name,
+                    AuthorId = user.Id,
+                    AuthorName = user.Name,
                     Private = true,
+                    VersionList = new List<PackageVersionModel>()
                 };
 
-                dbSet.Add(package);
+                dbContext.Packages.Add(package);
             }
 
-            if (package.LatestVersion != default && new Version(package.LatestVersion) >= new Version(nuPkg.Version))
+            if (package.LatestVersion != default
+                && new Version(package.LatestVersion) >= new Version(nuPkg.Version))
             {
-                controllerContext.ModelState.AddModelError(nameof(nuPkg.Version), $"You package({nuPkg.Id}) version({nuPkg.Version}) cannot be less or equals version on server({package.LatestVersion}) ");
+                result.ErrorField = nameof(nuPkg.Version);
+                result.ErrorMessage = $"You package({nuPkg.Id}) version({nuPkg.Version}) cannot be less or equals version on server({package.LatestVersion})";
 
-                return new BadRequestObjectResult(controllerContext.ModelState);
+                return;
             }
 
-            var verDbSet = dbContext.Set<PackageVersionModel>();
-
-            verDbSet.Add(new PackageVersionModel()
+            var version = new PackageVersionModel()
             {
                 Package = package,
                 Version = nuPkg.Version,
                 UploadTime = DateTime.UtcNow,
-                DepedencyGroupList = nuPkg.Dependencies.Groups.Select(x => new PackageVersionDepedencyGroupModel()
+                DependencyGroupList = nuPkg.Dependencies.Groups.Select(x => new PackageVersionDependencyGroupModel()
                 {
                     Version = nuPkg.Version,
                     Package = package,
 
                     TargetFramework = x.TargetFramework,
-                    Depedencies = x.Dependency.Select(n => new PackageVersionDepedencyModel()
+                    Dependencies = x.Dependency.Select(n => new PackageVersionDependencyModel()
                     {
-                        DepedencyName = n.Id,
-                        DepedencyVersion = n.Version,
+                        DependencyName = n.Id,
+                        DependencyVersion = n.Version,
                     }).ToList()
                 }).ToList()
-            });
+            };
+
+            dbContext.PackageVersions.Add(version);
 
             package.LatestVersion = nuPkg.Version;
             package.Description = nuPkg.Description ?? "";
 
-            return null;
+            package.VersionList.Add(version);
+
+            result.Package = package;
         }
 
         private async Task ProducePackage(NuGetFile NuGetFile, Stream stream)
@@ -217,24 +214,25 @@ namespace NUServer.Api.Managers
 
         internal async Task<IActionResult> Registration(ControllerContext controllerContext, IUrlHelper url, ApplicationDbContext dbContext, string shareToken, string name)
         {
-            var package = await dbContext.Set<PackageModel>()
-                .Include(x => x.Avtor)
+            var package = await dbContext.Packages
+                .Include(x => x.Author)
                 .Include(x => x.VersionList)
-                .FirstOrDefaultAsync(x => x.Name.ToLower().Equals(name) && (x.Avtor.ShareToken == shareToken || !x.Private));
+                .FirstOrDefaultAsync(x => x.Name.ToLower().Equals(name) && (x.Author.ShareToken == shareToken || !x.Private));
 
             if (package == null)
                 return new StatusCodeResult((int)HttpStatusCode.NotFound);
 
             foreach (var version in package.VersionList)
             {
-                version.DepedencyGroupList = await dbContext
-                    .Set<PackageVersionDepedencyGroupModel>()
+                version.DependencyGroupList = await dbContext
+                    .PackageVersionDependencyGroups
                     .Where(x => x.PackageId == package.Id && x.Version == version.Version)
                     .ToListAsync();
-                foreach (var group in version.DepedencyGroupList)
+
+                foreach (var group in version.DependencyGroupList)
                 {
-                    group.Depedencies = await dbContext
-                    .Set<PackageVersionDepedencyModel>()
+                    group.Dependencies = await dbContext
+                    .PackageVersionDependencies
                     .Where(x => x.GroupId == group.Id)
                     .ToListAsync();
                 }
@@ -264,10 +262,10 @@ namespace NUServer.Api.Managers
 
         internal async Task<IActionResult> GetVersionList(ApplicationDbContext dbContext, string shareToken, string name)
         {
-            var package = await dbContext.Set<PackageModel>()
-                .Include(x => x.Avtor)
+            var package = await dbContext.Packages
+                .Include(x => x.Author)
                 .Include(x => x.VersionList)
-                .FirstOrDefaultAsync(x => x.Name.ToLower().Equals(name) && (x.Avtor.ShareToken == shareToken || !x.Private));
+                .FirstOrDefaultAsync(x => x.Name.ToLower().Equals(name) && (x.Author.ShareToken == shareToken || !x.Private));
 
             if (package == null)
                 return new StatusCodeResult(404);
@@ -280,12 +278,12 @@ namespace NUServer.Api.Managers
 
         private IQueryable<PackageModel> SelectPackagesQuery(ApplicationDbContext dbContext, string shareToken, string? q)
         {
-            var set = dbContext.Set<PackageModel>();
+            var set = dbContext.Packages;
 
             IQueryable<PackageModel> query = set
-                .Include(x => x.Avtor)
+                .Include(x => x.Author)
                 .Include(x => x.VersionList)
-                .Where(x => x.Avtor.ShareToken == shareToken || !x.Private);
+                .Where(x => x.Author.ShareToken == shareToken || !x.Private);
 
             if (!string.IsNullOrWhiteSpace(q))
             {
@@ -327,8 +325,8 @@ namespace NUServer.Api.Managers
                   .Select(x => x.Name)
                   .ToListAsync()));
         }
-        internal async Task<IActionResult> GenerateNuGetIndex(Data.ApplicationDbContext dbContext, string shareToken)
-            => new OkObjectResult(new NuGetIndexResponseServerModel("3.0.0", await dbContext.ResourceSet.Where(x => x.Active).Select(x => new IndexResourceModel
+        internal async Task<IActionResult> GenerateNuGetIndex(ApplicationDbContext dbContext, string shareToken)
+            => new OkObjectResult(new NuGetIndexResponseServerModel("3.0.0", await dbContext.Resources.Where(x => x.Active).Select(x => new IndexResourceModel
             {
                 Url = x.Url.Replace("{shareToken}", shareToken),
                 Type = x.Type,
@@ -337,14 +335,14 @@ namespace NUServer.Api.Managers
 
         internal async Task<IActionResult> GetNuPkgFile(ApplicationDbContext dbContext, string shareToken, string name, string version)
         {
-            if (await dbContext.Set<PackageModel>().Include(x => x.Avtor).AnyAsync())
+            if (await dbContext.Packages.Include(x => x.Author).AnyAsync())
                 return new FileStreamResult(File.OpenRead(GetPackageNuGetPath(name, version)), "application/octet-stream");
 
             return new NotFoundResult();
         }
         internal async Task<IActionResult> GetNuSpecFile(ApplicationDbContext dbContext, string shareToken, string name, string version)
         {
-            if (await dbContext.Set<PackageModel>().Include(x => x.Avtor).AnyAsync())
+            if (await dbContext.Packages.Include(x => x.Author).AnyAsync())
                 return new FileStreamResult(File.OpenRead(GetPackageNuSpecPath(name, version)), "application/xml");
 
             return new NotFoundResult();

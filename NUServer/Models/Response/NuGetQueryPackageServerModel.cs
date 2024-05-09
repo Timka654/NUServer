@@ -1,8 +1,8 @@
 ﻿using NU.Core.Models.Response;
-using NUServer.Shared.DB;
+using NUServer.Shared.Models;
 using System.Text.Json.Serialization;
 
-namespace NUServer.Api.Models.Response
+namespace NUServer.Models.Response
 {
     public class NuGetQueryPackageServerModel : NuGetQueryPackageModel
     {
@@ -17,7 +17,7 @@ namespace NUServer.Api.Models.Response
 
         public override string Version => Data.LatestVersion;
 
-        public override string[] Authors => new string[] { Data.AvtorName };
+        public override string[] Authors => new string[] { Data.AuthorName };
 
         public override long TotalDownloads => Data.DownloadCount;
 

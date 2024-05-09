@@ -1,8 +1,8 @@
 ﻿using NU.Core.Models.Response;
-using NUServer.Shared.DB;
+using NUServer.Shared.Models;
 using System.Text.Json.Serialization;
 
-namespace NUServer.Api.Models.Response
+namespace NUServer.Models.Response
 {
     public class NuGetRegistrationCatalogEntryServerModel : NuGetRegistrationCatalogEntryModel
     {
@@ -14,7 +14,7 @@ namespace NUServer.Api.Models.Response
 
         public NuGetRegistrationCatalogEntryServerModel(PackageModel package, PackageVersionModel version, Func<string, string?, string> registrationUrl, Func<string, string?, string> nupkgUrl)
         {
-            Authors = package.Avtor.Name;
+            Authors = package.Author.Name;
             Description = package.Description;
             Id = package.Name;
 
@@ -22,7 +22,7 @@ namespace NUServer.Api.Models.Response
             Version = version.Version;
             Published = version.UploadTime;
 
-            DependencyGroups = new List<NuGetRegistrationCatalogDepedencyGroupModel>(version.DepedencyGroupList.Select(x => new NuGetRegistrationCatalogDependencyGroupServerModel(package, version, x, registrationUrl)));
+            DependencyGroups = new List<NuGetRegistrationCatalogDepedencyGroupModel>(version.DependencyGroupList.Select(x => new NuGetRegistrationCatalogDependencyGroupServerModel(package, version, x, registrationUrl)));
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using NU.Core.Models;
 
-namespace NUServer.Shared.DB
+namespace NUServer.Shared.Models
 {
     public class ResourceModel : IndexResourceModel
     {

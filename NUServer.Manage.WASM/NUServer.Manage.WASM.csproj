@@ -15,7 +15,6 @@
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.4" />
 		<PackageReference Include="NSL.ASPNET.Identity" Version="2024.4.26.154" />
 		<PackageReference Include="NSL.Generators.HttpEndPointGenerator" Version="2024.4.26.154" />
-		<PackageReference Include="NSL.Generators.HttpEndPointGenerator.Shared" Version="2024.4.26.154" />
 		<PackageReference Include="NSL.HttpClient.Blazor" Version="2024.4.26.154" />
 	</ItemGroup>
 
