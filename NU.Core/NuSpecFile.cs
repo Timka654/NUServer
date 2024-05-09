@@ -58,6 +58,12 @@ namespace NU.Core
 
                     Data = xs.Deserialize(stream) as NuSpecFileModel2012;
                 }
+                else if (@namespace == "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd")
+                {
+                    xs = new XmlSerializer(typeof(NuSpecFileModel2010));
+
+                    Data = xs.Deserialize(stream) as NuSpecFileModel2010;
+                }
                 else
                 {
                     throw new InvalidCastException($"NUSpec file have unsupported namespace {@namespace}");
@@ -104,6 +110,11 @@ namespace NU.Core
                 {
                     XmlSerializer xs = new XmlSerializer(typeof(NuSpecFileModel2013));
                     xs.Serialize(xmlWriter, nuSpec2013, myNamespaces);
+                }
+                else if (Data is NuSpecFileModel2010 nuSpec2010)
+                {
+                    XmlSerializer xs = new XmlSerializer(typeof(NuSpecFileModel2010));
+                    xs.Serialize(xmlWriter, nuSpec2010, myNamespaces);
                 }
                 else
                 {

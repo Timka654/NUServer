@@ -3,6 +3,9 @@ using System.Xml.Serialization;
 
 namespace NU.Core.Models
 {
+    [XmlRoot("package", Namespace = "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd")]
+    public class NuSpecFileModel2010 : NuSpecFileModel { }
+
     [XmlRoot("package", Namespace = "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd")]
     public class NuSpecFileModel2012 : NuSpecFileModel { }
 
