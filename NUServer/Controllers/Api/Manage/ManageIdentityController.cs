@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using NSL.ASPNET.Identity.Host;
 using NSL.ASPNET.Mvc;
 using NSL.ASPNET.Mvc.Route.Attributes;
+using NUServer.Data;
+using NUServer.Managers;
 using NUServer.Shared.Models;
 using NUServer.Shared.Models.Controllers;
 using NUServer.Shared.Models.Request;
@@ -12,9 +14,8 @@ namespace NUServer.Controllers.Api.Manage
 {
     [Route("api/manage/[controller]")]
     [ApiController]
-    public class ManageIdentityController(AppSignInManager signInManager, IConfiguration configuration) : ControllerBase, IManageIdentityController
+    public class ManageIdentityController(AppSignInManager signInManager, IConfiguration configuration, UserManager userManager, ApplicationDbContext db) : ControllerBase, IManageIdentityController
     {
-
         [HttpPostAction]
         public async Task<IActionResult> SignIn([FromBody] SignInRequestModel query)
         => await this.ProcessRequestAsync(async () =>
@@ -44,6 +45,8 @@ namespace NUServer.Controllers.Api.Manage
             var u = new UserModel() { Email = query.Email, UserName = query.Email };
 
             query.FillTo(u);
+
+            await userManager.SetTokens(db, u);
 
             var r = await signInManager.UserManager.CreateAsync(u, query.Password);
 

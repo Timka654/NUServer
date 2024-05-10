@@ -69,34 +69,70 @@ namespace NUServer.Controllers.Api.Manage
         });
 
         [HttpPostAction]
-        public async Task<IActionResult> RemoveVersion([FromForm] RemovePackageVersionRequestModel query)
+        public async Task<IActionResult> RemoveVersion([FromBody] RemovePackageVersionRequestModel query)
         => await this.ProcessRequestAsync(async () =>
         {
             var uid = User.GetUserId();
+
+            var version =
 
             await dbContext.PackageVersions
             .Include(x => x.Package)
-            .Where(x =>
+            .FirstOrDefaultAsync(x =>
             x.Package.AuthorId == uid.Value
             && x.PackageId == query.PackageId
-            && x.Version == query.PackageVersion)
-            .ExecuteDeleteAsync();
+            && x.Version == query.PackageVersion);
 
+            bool fullRemove = false;
 
-            return Ok();
+            if (version != null)
+            {
+                var package = version.Package;
+
+                await packageManager.RemovePackageVerFiles(version);
+
+                dbContext.Entry(version).State = EntityState.Deleted;
+
+                if (package.VersionList.Count > 1)
+                {
+                    var ver = package.VersionList.Where(x => x.Version != version.Version).OrderByDescending(x => x.UploadTime).First();
+
+                    package.LatestVersion = ver.Version;
+                }
+                else
+                {
+                    dbContext.Entry(package).State = EntityState.Deleted;
+                    fullRemove = true;
+                }
+
+                await dbContext.SaveChangesAsync();
+            }
+
+            return this.DataResponse(fullRemove);
         });
 
         [HttpPostAction]
-        public async Task<IActionResult> Remove([FromForm] Guid query)
+        public async Task<IActionResult> Remove([FromBody] Guid query)
         => await this.ProcessRequestAsync(async () =>
         {
             var uid = User.GetUserId();
 
-            await dbContext.Packages
-            .Where(x =>
+            var package =
+
+             await dbContext.Packages
+            .Include(x => x.VersionList)
+            .FirstOrDefaultAsync(x =>
             x.AuthorId == uid.Value
-            && x.Id == query)
-            .ExecuteDeleteAsync();
+            && x.Id == query);
+
+            if (package != null)
+            {
+                await packageManager.RemovePackageFiles(package);
+
+                dbContext.Entry(package).State = EntityState.Deleted;
+
+                await dbContext.SaveChangesAsync();
+            }
 
             return Ok();
         });

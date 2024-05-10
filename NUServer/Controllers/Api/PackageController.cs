@@ -40,11 +40,12 @@ namespace NUServer.Controllers.Api
 
             return BadRequest(ModelState);
         }
+
         //https://docs.microsoft.com/en-us/NuGet/api/service-index
         [HttpGet("{shareToken}/v3/index.json")]
         public async Task<IActionResult> Get(string shareToken)
-            => await packageManager.GenerateNuGetIndex(dbContext, shareToken);
-
+            =>await packageManager.GenerateNuGetIndex(dbContext, shareToken, $"{this.Request.Scheme}://{this.Request.Host}");
+        
         //https://docs.microsoft.com/en-us/NuGet/api/search-query-service-resource
         [HttpGet("{shareToken}/query")]
         public async Task<IActionResult> Query(string shareToken, string? q, int? skip, int? take, bool? prerelease, string? semVerLevel, string? packageType)

@@ -12,5 +12,10 @@ namespace NUServer.Shared.Models.Controllers
     [HttpEndPointContainerGenerate("api/manage/[controller]")]
     public interface IManageUserController
     {
+        [HttpEndPointGenerate(typeof(DataResponse<UserModel>))] Task<IActionResult> GetStorageData();
+
+        [HttpEndPointGenerate(typeof(DataResponse<string>))] Task<IActionResult> RefreshStorageShareToken();
+
+        [HttpEndPointGenerate(typeof(DataResponse<string>))] Task<IActionResult> RefreshStoragePublishToken();
     }
 }

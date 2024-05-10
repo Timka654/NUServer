@@ -29,13 +29,13 @@ builder.Services
     .AddHttpMessageIdentityHandler()
     .AddIdentityStateProvider<IdentityStateProvider>()
     .AddIdentityService<AppIdentityService>()
-    .AddIdentityAuthorizationService<IdentityAuthorizationService>(); 
+    .AddIdentityAuthorizationService<IdentityAuthorizationService>();
+
+builder.Services.AddSingleton<PackagesService>();
 
 
 builder.RootComponents.Add<Routes>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
-
-
 
 var app = builder.Build();
 

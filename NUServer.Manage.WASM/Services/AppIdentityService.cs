@@ -9,6 +9,7 @@ using System.Net.Http;
 namespace NUServer.Manage.WASM.Services
 {
     [HttpEndPointImplementGenerate(typeof(IManageIdentityController))]
+    [HttpEndPointImplementGenerate(typeof(IManageUserController))]
     public partial class AppIdentityService(IdentityStateProvider identityStateProvider, IHttpClientFactory httpClientFactory, ILocalStorageService localStorageService) : IdentityJWTService(identityStateProvider)
     {
         private const string tokenStoreName = "authToken";

@@ -1,0 +1,32 @@
+﻿@page "/packages"
+@attribute [Authorize]
+
+<PageTitle>PackagesPage</PageTitle>
+
+<h3>My packages</h3>
+
+<hr />
+
+<EditForm Model="this">
+    <NSL.HttpClient.Blazor.Validators.ServerModelValidator @ref="validator"></NSL.HttpClient.Blazor.Validators.ServerModelValidator>
+    <ValidationSummary></ValidationSummary>
+
+    <InputFile OnChange="UploadFileHandle">Upload file</InputFile>
+</EditForm>
+
+<table class="table">
+    <tr>
+        <th>Name</th>
+        <th>Latest Version</th>
+        <th>Latest Published</th>
+    </tr>
+    @foreach (var item in viewData.Data)
+    {
+        <tr>
+            <td>@item.Name</td>
+            <td>@item.LatestVersion</td>
+            <td>@item.Published</td>
+            <td><a class="btn-link" href="packages/details/@item.Id">Details</a></td>
+        </tr>
+    }
+</table>

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using NUServer.Shared.Models;
+using System.Reflection.Metadata;
 
 namespace NUServer.Data
 {
@@ -27,6 +28,22 @@ namespace NUServer.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<PackageVersionModel>().HasKey("PackageId", "Version");
+
+
+            modelBuilder.Entity<PackageVersionDependencyGroupModel>()
+            .HasMany(e => e.Dependencies)
+            .WithOne(e => e.Group)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PackageVersionModel>()
+            .HasMany(e => e.DependencyGroupList)
+            .WithOne(e => e.PackageVersion)
+            .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PackageModel>()
+            .HasMany(e => e.VersionList)
+            .WithOne(e => e.Package)
+            .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

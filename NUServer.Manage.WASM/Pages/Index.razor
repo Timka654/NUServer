@@ -1,4 +1,75 @@
 ﻿@page "/"
 @attribute [Authorize]
 
-<h1>Hello, world!</h1>
+<PageTitle>Index</PageTitle>
+
+@if (Details == null)
+{
+    <h3>Loading...</h3>
+    return;
+}
+
+<h3>@Details.Name</h3>
+
+<hr />
+
+<dl>
+    <dt>Share token</dt>
+
+    @if (showSharedToken)
+    {
+        <dd>
+            <span><code>@Details.ShareToken</code></span>
+        </dd>
+
+        <dt>Share url</dt>
+        <dd><code>@BaseUrl/api/Package/@Details.ShareToken/v3/index.json</code></dd>
+
+        <dt>NuGet add source command</dt>
+        <dd><code>dotnet nuget add source "@BaseUrl/api/Package/@Details.ShareToken/v3/index.json" -n "@Details.Name"</code></dd>
+    }
+    else
+    {
+        <dd>
+            <span>[hidden]</span> <a class="btn-link pointer-events" @onclick="()=>showSharedToken = !showSharedToken">Show</a>
+        </dd>
+    }
+
+    <dt>Publish token</dt>
+    @if (showPublishToken)
+    {
+        <dd>
+            <span><code>@Details.PublishToken</code></span>
+        </dd>
+
+        <dt>Publish url</dt>
+        <dd><code>@BaseUrl/api/Package/Publish</code></dd>
+
+        <dt>UID</dt>
+        <dd><code>@Details.Id</code></dd>
+
+        <dt>Request info</dt>
+        <dd>
+            <p><b>Headers</b></p>
+            <p>"signToken" - it's your "Publish token" value</p>
+            <p>"uid" - it's your "UID" value</p>
+
+            <p><b>Forms</b></p>
+            <p>package - form with package file content</p>
+        </dd>
+    }
+    else
+    {
+        <dd>
+            <span>[hidden]</span> <a class="btn-link pointer-events" @onclick="()=>showPublishToken = !showPublishToken">Show</a>
+        </dd>
+    }
+
+    <dt style="color:red;">Danger zone</dt>
+    <dd>
+        <p>Warning - actual token has return invalid response after this action!!</p>
+        <a class="btn-link pointer-events" @onclick="RefreshSharedClickHandle">Refresh shared token</a>
+        <a class="btn-link pointer-events" @onclick="RefreshPublishClickHandle">Refresh publish token</a>
+    </dd>
+</dl>
+

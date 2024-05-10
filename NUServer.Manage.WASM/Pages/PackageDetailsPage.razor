@@ -1,0 +1,49 @@
+﻿@page "/packages/details/{Id:guid}"
+
+<PageTitle>PackageDetailsPage</PageTitle>
+
+@if (Details == null)
+{
+    <h3>Loading...</h3>
+    return;
+}
+
+<h3>@Details.Name</h3>
+
+<button class="btn btn-danger" @onclick="RemoveClickHandle">Remove package</button>
+
+<dl>
+    <dt>Description</dt>
+    <dd>@Details.Description</dd>
+
+    <dt>Latest version</dt>
+    <dd>@Details.LatestVersion</dd>
+
+    <dt>Latest upload</dt>
+    <dd>@Details.Published</dd>
+
+    <dt>Download count</dt>
+    <dd>@Details.DownloadCount</dd>
+
+    <dt>Version count</dt>
+    <dd>@Details.VersionList.Count</dd>
+</dl>
+
+<table class="table">
+    <tr>
+        <th>Version</th>
+        <th>Upload date</th>
+        <th>Download count</th>
+        <th></th>
+    </tr>
+    @foreach (var item in Details.VersionList)
+    {
+        var _i = item;
+        <tr>
+            <td>@item.Version</td>
+            <td>@item.UploadTime</td>
+            <td>@item.DownloadCount</td>
+            <td><a class="btn-link pointer-events" @onclick="()=>RemoveVersionClickHandle(_i)">Remove</a></td>
+        </tr>
+    }
+</table>

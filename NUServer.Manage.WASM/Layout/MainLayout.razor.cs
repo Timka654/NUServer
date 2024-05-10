@@ -32,9 +32,8 @@ namespace NUServer.Manage.WASM.Layout
         {
             navItems = new List<NavItem>
         {
-            new NavItem { Id = "1", Href = "/", IconName = IconName.HouseDoorFill, Text = "Home", Match=NavLinkMatch.All},
-            new NavItem { Id = "2", Href = "/counter", IconName = IconName.PlusSquareFill, Text = "Counter"},
-            new NavItem { Id = "3", Href = "/weather", IconName = IconName.Table, Text = "Fetch Data"},
+            new NavItem { Id = "1", Href = "", IconName = IconName.HouseDoorFill, Text = "Home", Match=NavLinkMatch.All},
+            new NavItem { Id = "2", Href = "packages", IconName = IconName.PlusSquareFill, Text = "Packages"},
         };
 
             return navItems;

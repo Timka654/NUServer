@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NUServer.Data;
 using NUServer.Shared.Models;
 using NUServer.Shared.Models.Request;
+using System.Collections.Generic;
 
 namespace NUServer.Managers
 {
@@ -25,23 +26,42 @@ namespace NUServer.Managers
                 UserName = query.Email,
             };
 
-            do
-            {
-                user.ShareToken = string.Join('-', Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
-
-            } while (await dbSet.AnyAsync(x => x.ShareToken == user.ShareToken));
-
-            do
-            {
-                user.PublishToken = string.Join('-', Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
-
-            } while (await dbSet.AnyAsync(x => x.PublishToken == user.PublishToken));
+            await SetTokens(db, user);
 
             await dbSet.AddAsync(user);
 
             await db.SaveChangesAsync();
 
             return new OkObjectResult(new { UID = user.Id, user.ShareToken, user.PublishToken });
+        }
+
+        public async Task SetTokens(ApplicationDbContext db, UserModel user)
+        {
+            await SetShareToken(db, user);
+
+            await SetPublishToken(db, user);
+        }
+
+        public async Task SetPublishToken(ApplicationDbContext db, UserModel user)
+        {
+            var dbSet = db.Users;
+            do
+            {
+                user.PublishToken = string.Join('-', Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+
+            } while (await dbSet.AnyAsync(x => x.PublishToken == user.PublishToken));
+
+        }
+
+        public async Task SetShareToken(ApplicationDbContext db, UserModel user)
+        {
+            var dbSet = db.Users;
+
+            do
+            {
+                user.ShareToken = string.Join('-', Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+
+            } while (await dbSet.AnyAsync(x => x.ShareToken == user.ShareToken));
         }
 
         internal async Task<IActionResult> GetSharedToken(ControllerContext controllerContext, IUrlHelper url, ApplicationDbContext db, string userId)

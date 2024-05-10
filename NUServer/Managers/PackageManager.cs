@@ -8,51 +8,73 @@ using NUServer.Shared.Models;
 using NUServer.Data;
 using NUServer.Models.Response;
 using NUServer.Models;
+using Azure.Storage.Blobs;
+using System.IO;
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace NUServer.Managers
 {
-    public class PackageManager
+    public class PackageManager(IWebHostEnvironment environment, BlobServiceClient blob)
     {
-        private readonly IWebHostEnvironment environment;
-
         #region Path
 
-        private const string RootPath = "Packages";
+        #region Base
 
-        private string GetPackagePath(NuGetFile NuGetFile) => GetPackagePath(NuGetFile.Id.ToLower(), NuGetFile.Version);
+        private string GetPackageBasePath(PackageModel package)
+            => GetPackageBasePath(package.AuthorId, package.Name);
 
-        private string GetPackagePath(string packageName, string packageVersion) => Path.Combine(RootPath, packageName.ToLower(), packageVersion);
+        private string GetPackageBasePath(Guid userId, NuGetFile NuGetFile)
+            => GetPackageBasePath(userId, NuGetFile.Id);
 
-        private string GetPackageNuGetPath(NuGetFile NuGetFile) => GetPackageNuGetPath(NuGetFile.Id.ToLower(), NuGetFile.Version);
-
-        private string GetPackageNuGetPath(string packageName, string packageVersion) => GetPackageNuGetPath(GetPackagePath(packageName.ToLower(), packageVersion), packageName.ToLower(), packageVersion);
-
-        private string GetPackageNuGetPath(string relativePath, NuGetFile NuGetFile) => GetPackageNuGetPath(relativePath, NuGetFile.Id.ToLower(), NuGetFile.Version);
-
-        private string GetPackageNuGetPath(string relativePath, string packageName, string packageVersion) => Path.Combine(relativePath, $"{packageName.ToLower()}.{packageVersion}.nupkg");
-
-        private string GetPackageNuSpecPath(NuGetFile NuGetFile) => GetPackageNuSpecPath(NuGetFile.Id.ToLower(), NuGetFile.Version);
-
-        private string GetPackageNuSpecPath(string packageName, string packageVersion) => GetPackageNuSpecPath(GetPackagePath(packageName.ToLower(), packageVersion), packageName.ToLower(), packageVersion);
-
-        private string GetPackageNuSpecPath(string relativePath, NuGetFile NuGetFile) => GetPackageNuSpecPath(relativePath, NuGetFile.Id.ToLower(), NuGetFile.Version);
-
-        private string GetPackageNuSpecPath(string relativePath, string packageName, string packageVersion) => Path.Combine(relativePath, $"{packageName.ToLower()}.{packageVersion}.nupkg");
-
-        private string GetPackageVersionFilePath(NuGetFile NuGetFile) => GetPackageVersionFilePath(NuGetFile.Id.ToLower(), NuGetFile.Version);
-
-        private string GetPackageVersionFilePath(string packageName, string packageVersion) => GetPackageVersionFilePath(GetPackagePath(packageName.ToLower(), packageVersion), packageName.ToLower(), packageVersion);
-
-        private string GetPackageVersionFilePath(string relativePath, NuGetFile NuGetFile) => GetPackageVersionFilePath(relativePath, NuGetFile.Id.ToLower(), NuGetFile.Version);
-
-        private string GetPackageVersionFilePath(string relativePath, string packageName, string packageVersion) => Path.Combine(relativePath, packageName.ToLower(), $"{packageVersion}.json");
+        private string GetPackageBasePath(Guid userId, string packageId)
+            => string.Join("/", userId.ToString(), packageId.ToLower());
 
         #endregion
 
-        public PackageManager(IWebHostEnvironment environment)
-        {
-            this.environment = environment;
-        }
+        #region Version
+
+        private string GetPackageVersionPath(PackageModel NuGetFile)
+            => GetPackageVersionPath(NuGetFile.AuthorId, NuGetFile.Name, NuGetFile.LatestVersion);
+
+        private string GetPackageVersionPath(PackageModel NuGetFile, PackageVersionModel version)
+            => GetPackageVersionPath(NuGetFile.AuthorId, NuGetFile.Name, version.Version);
+
+        private string GetPackageVersionPath(Guid userId, NuGetFile NuGetFile)
+            => GetPackageVersionPath(userId, NuGetFile.Id, NuGetFile.Version);
+
+        private string GetPackageVersionPath(Guid userId, string packageId, string version)
+            => string.Join("/", GetPackageBasePath(userId, packageId), version);
+
+        #endregion
+
+        private string GetPackageVersionNuPkgPath(PackageModel NuGetFile)
+            => GetPackageVersionNuPkgPath(NuGetFile.AuthorId, NuGetFile.Name, NuGetFile.LatestVersion);
+
+        private string GetPackageVersionNuSpecPath(PackageModel NuGetFile)
+            => GetPackageVersionNuSpecPath(NuGetFile.AuthorId, NuGetFile.Name, NuGetFile.LatestVersion);
+
+        private string GetPackageVersionNuPkgPath(PackageModel NuGetFile, PackageVersionModel version)
+            => GetPackageVersionNuPkgPath(NuGetFile.AuthorId, NuGetFile.Name, version.Version);
+
+        private string GetPackageVersionNuSpecPath(PackageModel NuGetFile, PackageVersionModel version)
+            => GetPackageVersionNuSpecPath(NuGetFile.AuthorId, NuGetFile.Name, version.Version);
+
+        private string GetPackageVersionNuPkgPath(Guid userId, NuGetFile NuGetFile)
+            => GetPackageVersionNuPkgPath(userId, NuGetFile.Id, NuGetFile.Version);
+
+        private string GetPackageVersionNuSpecPath(Guid userId, NuGetFile NuGetFile)
+            => GetPackageVersionNuSpecPath(userId, NuGetFile.Id, NuGetFile.Version);
+
+        private string GetPackageVersionNuPkgPath(Guid userId, string packageId, string version)
+            => string.Join("/", GetPackageVersionPath(userId, packageId, version), "package.nupkg");
+
+        private string GetPackageVersionNuSpecPath(Guid userId, string packageId, string version)
+            => string.Join("/", GetPackageVersionPath(userId, packageId, version), "package.nuspec");
+
+
+        #endregion
 
         #region Publish
 
@@ -70,7 +92,7 @@ namespace NUServer.Managers
             {
                 await dbContext.SaveChangesAsync();
 
-                await ProducePackage(nuPkg, fileStream);
+                await ProducePackage(nuPkg, fileStream, user);
             }
 
             return result;
@@ -109,7 +131,7 @@ namespace NUServer.Managers
 
             foreach (var package in packages)
             {
-                await ProducePackage(package.file, package.stream);
+                await ProducePackage(package.file, package.stream, user);
             }
 
             return null;
@@ -165,7 +187,7 @@ namespace NUServer.Managers
                 Package = package,
                 Version = nuPkg.Version,
                 UploadTime = DateTime.UtcNow,
-                DependencyGroupList = nuPkg.Dependencies.Groups.Select(x => new PackageVersionDependencyGroupModel()
+                DependencyGroupList = nuPkg.Dependencies?.Groups?.Select(x => new PackageVersionDependencyGroupModel()
                 {
                     Version = nuPkg.Version,
                     Package = package,
@@ -176,12 +198,13 @@ namespace NUServer.Managers
                         DependencyName = n.Id,
                         DependencyVersion = n.Version,
                     }).ToList()
-                }).ToList()
+                }).ToList() ?? new List<PackageVersionDependencyGroupModel>()
             };
 
             dbContext.PackageVersions.Add(version);
 
             package.LatestVersion = nuPkg.Version;
+            package.Published = DateTime.UtcNow;
             package.Description = nuPkg.Description ?? "";
 
             package.VersionList.Add(version);
@@ -189,21 +212,32 @@ namespace NUServer.Managers
             result.Package = package;
         }
 
-        private async Task ProducePackage(NuGetFile NuGetFile, Stream stream)
+        private async Task ProducePackage(NuGetFile NuGetFile, Stream stream, UserModel user)
         {
-            var dir = GetPackagePath(NuGetFile);
-
-            if (!Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
+            //if (!Directory.Exists(dir))
+            //    Directory.CreateDirectory(dir);
 
             stream.Position = 0;
 
-            using (var ofile = File.Create(GetPackageNuGetPath(NuGetFile)))
-            {
-                await stream.CopyToAsync(ofile);
-            }
+            var nugetPath = GetPackageVersionNuPkgPath(user.Id, NuGetFile);
 
-            NuGetFile.NUSpecFile.Write(NuGetFile.Id, dir);
+            await blob.GetBlobContainerClient("packages").GetBlobClient(nugetPath).UploadAsync(stream, true);
+
+
+            //using (var ofile = File.Create(GetPackageNuGetPath(NuGetFile)))
+            //{
+            //    await stream.CopyToAsync(ofile);
+            //}
+
+            using var nuspecStream = new MemoryStream();
+
+            NuGetFile.NUSpecFile.Write(nuspecStream);
+
+            nuspecStream.Position = 0;
+
+            var nuspecPath = GetPackageVersionNuSpecPath(user.Id, NuGetFile);
+
+            await blob.GetBlobContainerClient("packages").GetBlobClient(nuspecPath).UploadAsync(nuspecStream, true);
 
             NuGetFile.Dispose();
             stream.Dispose();
@@ -211,6 +245,32 @@ namespace NUServer.Managers
 
         #endregion
 
+
+        public async Task RemovePackageFiles(PackageModel package)
+        {
+            foreach (var item in package.VersionList)
+            {
+                await RemovePackageVerFiles(item);
+            }
+        }
+
+        public async Task RemovePackageVerFiles(PackageVersionModel version)
+        {
+            await blob.GetBlobContainerClient("packages")
+                .GetBlobClient(GetPackageVersionNuPkgPath(version.Package, version))
+                .DeleteIfExistsAsync();
+
+            await blob.GetBlobContainerClient("packages")
+                .GetBlobClient(GetPackageVersionNuSpecPath(version.Package, version))
+                .DeleteIfExistsAsync();
+        }
+
+        public static JsonSerializerOptions NuGetJsonOptions { get; } = new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
 
         internal async Task<IActionResult> Registration(ControllerContext controllerContext, IUrlHelper url, ApplicationDbContext dbContext, string shareToken, string name)
         {
@@ -238,7 +298,7 @@ namespace NUServer.Managers
                 }
             }
 
-            return new OkObjectResult(new NuGetRegistrationResponseServerModel(package, (packageName, packageVersion) =>
+            return new JsonResult(new NuGetRegistrationResponseServerModel(package, (packageName, packageVersion) =>
             {
                 packageName = packageName.ToLower();
 
@@ -257,7 +317,7 @@ namespace NUServer.Managers
                     name2 = packageName,
                     version2 = packageVersion,
                 }, controllerContext.HttpContext.Request.Scheme);
-            }));
+            }), NuGetJsonOptions);
         }
 
         internal async Task<IActionResult> GetVersionList(ApplicationDbContext dbContext, string shareToken, string name)
@@ -270,10 +330,10 @@ namespace NUServer.Managers
             if (package == null)
                 return new StatusCodeResult(404);
 
-            return new OkObjectResult(new NuGetFlatPackageVersionsResponseModel
+            return new JsonResult(new NuGetFlatPackageVersionsResponseModel
             {
                 Versions = package.VersionList.Select(x => x.Version).ToArray()
-            });
+            }, NuGetJsonOptions);
         }
 
         private IQueryable<PackageModel> SelectPackagesQuery(ApplicationDbContext dbContext, string shareToken, string? q)
@@ -312,40 +372,65 @@ namespace NUServer.Managers
         {
             var query = SelectPackagesQuery(dbContext, shareToken, q);
 
-            return new OkObjectResult(new NuGetQueryResponseServerModel(await query.CountAsync(), await SelectPackages(query, skip, take)
+            return new JsonResult(new NuGetQueryResponseServerModel(await query.CountAsync(), await SelectPackages(query, skip, take)
                   .Select(x => new NuGetQueryPackageServerModel(x))
-                  .ToListAsync()));
+                  .ToListAsync()), NuGetJsonOptions);
         }
 
         internal async Task<IActionResult> AutoCompleteName(ApplicationDbContext dbContext, string shareToken, string? q, int? skip, int? take, bool? prerelease, string? semVerLevel, string? packageType)
         {
             var query = SelectPackagesQuery(dbContext, shareToken, q);
 
-            return new OkObjectResult(new NuGetAutoCompleteResponseServerModel(await query.CountAsync(), await SelectPackages(query, skip, take)
+            return new JsonResult(new NuGetAutoCompleteResponseServerModel(await query.CountAsync(), await SelectPackages(query, skip, take)
                   .Select(x => x.Name)
-                  .ToListAsync()));
+                  .ToListAsync()), NuGetJsonOptions);
         }
-        internal async Task<IActionResult> GenerateNuGetIndex(ApplicationDbContext dbContext, string shareToken)
-            => new OkObjectResult(new NuGetIndexResponseServerModel("3.0.0", await dbContext.Resources.Where(x => x.Active).Select(x => new IndexResourceModel
+
+        internal async Task<IActionResult> GenerateNuGetIndex(ApplicationDbContext dbContext, string shareToken,string baseUri)
+            => new JsonResult(new NuGetIndexResponseServerModel("3.0.0", await dbContext.Resources.Where(x => x.Active).Select(x => new IndexResourceModel
             {
-                Url = x.Url.Replace("{shareToken}", shareToken),
+                Url = (x.Url.StartsWith('/') ? baseUri : "") + x.Url.Replace("{shareToken}", shareToken),
                 Type = x.Type,
                 Comment = x.Comment
-            }).ToArrayAsync()));
+            }).ToArrayAsync()), NuGetJsonOptions) ;
 
         internal async Task<IActionResult> GetNuPkgFile(ApplicationDbContext dbContext, string shareToken, string name, string version)
         {
-            if (await dbContext.Packages.Include(x => x.Author).AnyAsync())
-                return new FileStreamResult(File.OpenRead(GetPackageNuGetPath(name, version)), "application/octet-stream");
+            var packageVer = await dbContext.PackageVersions.Include(x => x.Package).ThenInclude(x => x.Author)
+                .FirstOrDefaultAsync(x => x.Package.Author.ShareToken.Equals(shareToken)
+                                        && x.Package.Name.ToLower().Equals(name.ToLower())
+                                        && x.Version.Equals(version));
 
-            return new NotFoundResult();
+            if (packageVer == null)
+                return new NotFoundResult();
+
+            ++packageVer.DownloadCount;
+            ++packageVer.Package.DownloadCount;
+
+            await dbContext.SaveChangesAsync();
+
+            var res = await blob.GetBlobContainerClient("packages")
+                .GetBlobClient(GetPackageVersionNuPkgPath(packageVer.Package, packageVer))
+                .OpenReadAsync();
+
+            return new FileStreamResult(res, "application/octet-stream");
         }
+
         internal async Task<IActionResult> GetNuSpecFile(ApplicationDbContext dbContext, string shareToken, string name, string version)
         {
-            if (await dbContext.Packages.Include(x => x.Author).AnyAsync())
-                return new FileStreamResult(File.OpenRead(GetPackageNuSpecPath(name, version)), "application/xml");
+            var packageVer = await dbContext.PackageVersions.Include(x => x.Package).ThenInclude(x => x.Author)
+                .FirstOrDefaultAsync(x => x.Package.Author.ShareToken.Equals(shareToken)
+                                        && x.Package.Name.ToLower().Equals(name.ToLower())
+                                        && x.Version.Equals(version));
 
-            return new NotFoundResult();
+            if (packageVer == null)
+                return new NotFoundResult();
+
+            var res = await blob.GetBlobContainerClient("packages")
+                .GetBlobClient(GetPackageVersionNuSpecPath(packageVer.Package, packageVer))
+                .OpenReadAsync();
+
+            return new FileStreamResult(res, "application/xml");
         }
 
     }

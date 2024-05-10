@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using NSL.ASPNET.Identity.Host;
 using NSL.ASPNET.Mvc;
 using NSL.ASPNET.Mvc.Route.Attributes;
+using NUServer.Data;
+using NUServer.Managers;
 using NUServer.Shared.Models;
 using NUServer.Shared.Models.Controllers;
 using NUServer.Shared.Models.Request;
@@ -12,51 +14,47 @@ namespace NUServer.Controllers.Api.Manage
 {
     [Route("api/manage/[controller]")]
     [ApiController]
-    public class ManageUserController(AppSignInManager signInManager, IConfiguration configuration) : ControllerBase, IManageUserController
+    public class ManageUserController(AppSignInManager signInManager, IConfiguration configuration, UserManager userManager, ApplicationDbContext db) : ControllerBase, IManageUserController
     {
-
         [HttpPostAction]
-        public async Task<IActionResult> SignIn([FromBody] SignInRequestModel query)
+        public async Task<IActionResult> GetStorageData()
         => await this.ProcessRequestAsync(async () =>
             {
-                var u = await signInManager.UserManager.FindByEmailAsync(query.Email);
+                var uid = User.GetUserId();
 
-                if (u == null)
-                    return this.ModelStateResponse("User not found");
+                var u = await signInManager.UserManager.FindByIdAsync(uid.Value.ToString());
 
-                if (!await signInManager.UserManager.CheckPasswordAsync(u, query.Password))
-                    return this.ModelStateResponse("User not found");
-
-                var token = u.GenerateClaims((_u, claims) =>
-                {
-                }).GenerateJWT(configuration);
-
-                return this.DataResponse(new { token });
+                return this.DataResponse(new { u.Id, u.Name, u.ShareToken, u.PublishToken });
             });
 
         [HttpPostAction]
-        public async Task<IActionResult> SignUp([FromBody] SignUpRequestModel query)
+        public async Task<IActionResult> RefreshStoragePublishToken()
         => await this.ProcessRequestAsync(async () =>
         {
-            if (await signInManager.UserManager.Users.AnyAsync(x => x.Name.ToLower() == query.Name.ToLower()))
-                return this.ModelStateResponse($"User {query.Name} already exists");
+            var uid = User.GetUserId();
 
-            var u = new UserModel() { Email = query.Email, UserName = query.Email, Name = query.Name };
+            var u = await signInManager.UserManager.FindByIdAsync(uid.Value.ToString());
 
-            query.FillTo(u);
+            await userManager.SetPublishToken(db, u);
 
-            var r = await signInManager.UserManager.CreateAsync(u, query.Password);
+            await signInManager.UserManager.UpdateAsync(u);
 
-            if (!r.Succeeded)
-            {
-                return this.ModelStateResponse(r.Errors.Select(x => x.Description).ToArray());
-            }
+            return this.DataResponse(u.PublishToken);
+        });
 
-            var token = u.GenerateClaims((_u, claims) =>
-            {
-            }).GenerateJWT(configuration);
+        [HttpPostAction]
+        public async Task<IActionResult> RefreshStorageShareToken()
+        => await this.ProcessRequestAsync(async () =>
+        {
+            var uid = User.GetUserId();
 
-            return this.DataResponse(new { token });
+            var u = await signInManager.UserManager.FindByIdAsync(uid.Value.ToString());
+
+            await userManager.SetShareToken(db, u);
+
+            await signInManager.UserManager.UpdateAsync(u);
+
+            return this.DataResponse(u.ShareToken);
         });
     }
 }
