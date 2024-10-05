@@ -1,4 +1,3 @@
-using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
@@ -28,8 +27,6 @@ namespace NUServer
             // Add services to the container.
 
             builder.Services.AddDbContext<ApplicationDbContext>(c => c.UseNpgsql(builder.Configuration.GetConnectionString("db")));
-
-            builder.Services.AddSingleton(x => new BlobServiceClient(builder.Configuration.GetConnectionString("storage")));
 
             builder.Services.AddSingleton<PackageManager>();
 

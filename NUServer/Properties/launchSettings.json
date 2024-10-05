@@ -3,7 +3,7 @@
     "NUServer": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "manage/signin",
+      "launchUrl": "manage/packages",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

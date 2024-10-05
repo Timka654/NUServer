@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using NSL.Database.EntityFramework.Filter.Host;
 using NUServer.Shared.Models;
 using System.Reflection.Metadata;
 
@@ -26,6 +27,8 @@ namespace NUServer.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.HasDbFilter();
 
             modelBuilder.Entity<PackageVersionModel>().HasKey("PackageId", "Version");
 

@@ -7,24 +7,32 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Azure.Storage.Blobs" Version="12.19.1" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.4" />
-		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.4" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.8" />
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
-		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
-		<PackageReference Include="NSL.ASPNET" Version="2024.5.4.204" />
-		<PackageReference Include="NSL.ASPNET.Identity.Host" Version="2024.5.4.204" />
-		<PackageReference Include="NSL.ASPNET.Mvc" Version="2024.5.4.204" />
-		<PackageReference Include="NSL.Database.EntityFramework.Filter.Host.ASPNET" Version="2024.5.4.204" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.8" />
+		<PackageReference Include="NSL.ASPNET" Version="2024.10.4.1349" />
+		<PackageReference Include="NSL.ASPNET.Identity.Host" Version="2024.10.4.1349" />
+		<PackageReference Include="NSL.ASPNET.Mvc" Version="2024.10.4.1349" />
+		<PackageReference Include="NSL.Database.EntityFramework.Filter.Host.ASPNET" Version="2024.10.4.1349" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\NU.Core\NU.Core.csproj" />
 		<ProjectReference Include="..\NUServer.Manage.WASM\NUServer.Manage.WASM.csproj" />
 		<ProjectReference Include="..\NUServer.Shared\NUServer.Shared.Server.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update=".dockerignore">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Dockerfile">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 	<ProjectExtensions>

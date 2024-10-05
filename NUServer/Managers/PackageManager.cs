@@ -8,7 +8,6 @@ using NUServer.Shared.Models;
 using NUServer.Data;
 using NUServer.Models.Response;
 using NUServer.Models;
-using Azure.Storage.Blobs;
 using System.IO;
 using System;
 using System.Text.Json;
@@ -16,7 +15,7 @@ using System.Text.Json.Serialization;
 
 namespace NUServer.Managers
 {
-    public class PackageManager(IWebHostEnvironment environment, BlobServiceClient blob)
+    public class PackageManager(IWebHostEnvironment environment)
     {
         #region Path
 
@@ -212,22 +211,17 @@ namespace NUServer.Managers
             result.Package = package;
         }
 
+        private string getBasePackagesPath()
+            => Path.Combine("packages");
+
         private async Task ProducePackage(NuGetFile NuGetFile, Stream stream, UserModel user)
         {
-            //if (!Directory.Exists(dir))
-            //    Directory.CreateDirectory(dir);
-
             stream.Position = 0;
 
             var nugetPath = GetPackageVersionNuPkgPath(user.Id, NuGetFile);
 
-            await blob.GetBlobContainerClient("packages").GetBlobClient(nugetPath).UploadAsync(stream, true);
-
-
-            //using (var ofile = File.Create(GetPackageNuGetPath(NuGetFile)))
-            //{
-            //    await stream.CopyToAsync(ofile);
-            //}
+            using (var fs = File.Create(Path.Combine(getBasePackagesPath(), nugetPath)))
+                stream.CopyTo(fs);
 
             using var nuspecStream = new MemoryStream();
 
@@ -237,7 +231,8 @@ namespace NUServer.Managers
 
             var nuspecPath = GetPackageVersionNuSpecPath(user.Id, NuGetFile);
 
-            await blob.GetBlobContainerClient("packages").GetBlobClient(nuspecPath).UploadAsync(nuspecStream, true);
+            using (var fs = File.Create(Path.Combine(getBasePackagesPath(), nuspecPath)))
+                stream.CopyTo(nuspecStream);
 
             NuGetFile.Dispose();
             stream.Dispose();
@@ -256,13 +251,8 @@ namespace NUServer.Managers
 
         public async Task RemovePackageVerFiles(PackageVersionModel version)
         {
-            await blob.GetBlobContainerClient("packages")
-                .GetBlobClient(GetPackageVersionNuPkgPath(version.Package, version))
-                .DeleteIfExistsAsync();
-
-            await blob.GetBlobContainerClient("packages")
-                .GetBlobClient(GetPackageVersionNuSpecPath(version.Package, version))
-                .DeleteIfExistsAsync();
+            File.Delete(Path.Combine(getBasePackagesPath(), GetPackageVersionNuPkgPath(version.Package, version)));
+            File.Delete(Path.Combine(getBasePackagesPath(), GetPackageVersionNuSpecPath(version.Package, version)));
         }
 
         public static JsonSerializerOptions NuGetJsonOptions { get; } = new JsonSerializerOptions()
@@ -386,13 +376,13 @@ namespace NUServer.Managers
                   .ToListAsync()), NuGetJsonOptions);
         }
 
-        internal async Task<IActionResult> GenerateNuGetIndex(ApplicationDbContext dbContext, string shareToken,string baseUri)
+        internal async Task<IActionResult> GenerateNuGetIndex(ApplicationDbContext dbContext, string shareToken, string baseUri)
             => new JsonResult(new NuGetIndexResponseServerModel("3.0.0", await dbContext.Resources.Where(x => x.Active).Select(x => new IndexResourceModel
             {
                 Url = (x.Url.StartsWith('/') ? baseUri : "") + x.Url.Replace("{shareToken}", shareToken),
                 Type = x.Type,
                 Comment = x.Comment
-            }).ToArrayAsync()), NuGetJsonOptions) ;
+            }).ToArrayAsync()), NuGetJsonOptions);
 
         internal async Task<IActionResult> GetNuPkgFile(ApplicationDbContext dbContext, string shareToken, string name, string version)
         {
@@ -409,9 +399,16 @@ namespace NUServer.Managers
 
             await dbContext.SaveChangesAsync();
 
-            var res = await blob.GetBlobContainerClient("packages")
-                .GetBlobClient(GetPackageVersionNuPkgPath(packageVer.Package, packageVer))
-                .OpenReadAsync();
+            var path = Path.Combine(getBasePackagesPath(), GetPackageVersionNuPkgPath(packageVer.Package, packageVer));
+
+            if (!File.Exists(path))
+            {
+                dbContext.PackageVersions.Remove(packageVer);
+
+                await dbContext.SaveChangesAsync();
+            }
+
+            var res = File.OpenRead(path);
 
             return new FileStreamResult(res, "application/octet-stream");
         }
@@ -426,9 +423,16 @@ namespace NUServer.Managers
             if (packageVer == null)
                 return new NotFoundResult();
 
-            var res = await blob.GetBlobContainerClient("packages")
-                .GetBlobClient(GetPackageVersionNuSpecPath(packageVer.Package, packageVer))
-                .OpenReadAsync();
+            var path = Path.Combine(getBasePackagesPath(), GetPackageVersionNuSpecPath(packageVer.Package, packageVer));
+
+            if (!File.Exists(path))
+            {
+                dbContext.PackageVersions.Remove(packageVer);
+
+                await dbContext.SaveChangesAsync();
+            }
+
+            var res = File.OpenRead(path);
 
             return new FileStreamResult(res, "application/xml");
         }

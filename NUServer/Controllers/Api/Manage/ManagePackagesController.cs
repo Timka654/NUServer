@@ -21,7 +21,7 @@ namespace NUServer.Controllers.Api.Manage
         , PackageManager packageManager) : ControllerBase, IManagePackagesController
     {
         [HttpPostAction]
-        public async Task<IActionResult> Get([FromBody] BaseFilteredQueryModel query)
+        public async Task<IActionResult> Get([FromBody] EntityFilterQueryModel query)
         => await this.ProcessRequestAsync(async () =>
         {
             var uid = User.GetUserId();

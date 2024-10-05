@@ -15,7 +15,7 @@ namespace NUServer.Shared.Models.Controllers
     {
         [HttpEndPointGenerate(typeof(DataResponse<PackageModel>))] Task<IActionResult> Details([FromBody] Guid query);
 
-        [HttpEndPointGenerate(typeof(DataResponse<FilterResultModel<PackageModel>>))] Task<IActionResult> Get([FromBody] BaseFilteredQueryModel query);
+        [HttpEndPointGenerate(typeof(DataResponse<FilterResultModel<PackageModel>>))] Task<IActionResult> Get([FromBody] EntityFilterQueryModel query);
 
         [HttpEndPointGenerate(typeof(BaseResponse))] Task<IActionResult> Remove([FromBody] Guid query);
 
