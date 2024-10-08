@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Interactivity;
-using MessageBox.Avalonia;
+using Avalonia;
 using Newtonsoft.Json;
 using NU.Core;
 using NU.SimpleClient.Models.Request;
@@ -17,6 +17,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using static NU.SimpleClient.Configuration;
+using MsBox.Avalonia;
 
 namespace NU.SimpleClient
 {
@@ -131,13 +132,13 @@ namespace NU.SimpleClient
 
         private Task ShowMessageBox(string title, string content)
         {
-            var msgw = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBox.Avalonia.DTO.MessageBoxStandardParams()
+            var msgw = MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams()
             {
                 ContentTitle = title,
                 ContentMessage = content
             });
 
-            return msgw.ShowDialog(this);
+            return msgw.ShowWindowDialogAsync(this);
         }
 
         private async void SettingsFormGetShareUrlClick(object sender, RoutedEventArgs @event)
@@ -308,13 +309,13 @@ namespace NU.SimpleClient
 
                         notifyManager.Show(new Notification("Ошибка", "Произошла ошибка\r\nНажмите сюда для просмотра подробностей", NotificationType.Error, onClick: () =>
                         {
-                            var msgw = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBox.Avalonia.DTO.MessageBoxStandardParams()
+                            var msgw = MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams()
                             {
                                 ContentTitle = "Подробности",
                                 ContentMessage = content
                             });
 
-                            msgw.ShowDialog(this);
+                            msgw.ShowWindowDialogAsync(this);
                         }));
                     }
                     else if (response.StatusCode == System.Net.HttpStatusCode.BadGateway && response.Content is StringContent sc)
@@ -466,48 +467,54 @@ namespace NU.SimpleClient
 
                     notifyManager.Show(new Notification("Уведомление", "Успешная загрузка\r\nНажмите сюда для просмотра подробностей", onClick: () =>
                     {
-                        var msgw = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBox.Avalonia.DTO.MessageBoxStandardParams()
+                        var msgw = MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams()
                         {
                             ContentTitle = "Подробности",
                             ContentMessage = content
                         });
 
-                        msgw.ShowDialog(this);
+                        msgw.ShowWindowDialogAsync(this);
                     }));
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                {
-                    string content = await response.Content.ReadAsStringAsync();
-
-                    notifyManager.Show(new Notification("Ошибка", "Произошла ошибка загрузки\r\nНажмите сюда для просмотра подробностей", NotificationType.Error, onClick: () =>
-                    {
-                        var msgw = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBox.Avalonia.DTO.MessageBoxStandardParams()
-                        {
-                            ContentTitle = "Подробности",
-                            ContentMessage = content
-                        });
-
-                        msgw.ShowDialog(this);
-                    }));
-                }
-                else if (response.StatusCode == System.Net.HttpStatusCode.BadGateway && response.Content is StringContent sc)
-                {
-                    var content = await sc.ReadAsStringAsync();
-
-                    await ShowMessageBox($"Подробности {System.Net.HttpStatusCode.BadGateway}({Enum.GetName(System.Net.HttpStatusCode.BadGateway)})", content);
                 }
                 else
                 {
-                    notifyManager.Show(new Notification("Ошибка", "Произошла ошибка загрузки\r\nНажмите сюда для просмотра подробностей", NotificationType.Error, onClick: () =>
-                    {
-                        var msgw = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBox.Avalonia.DTO.MessageBoxStandardParams()
-                        {
-                            ContentTitle = "Подробности",
-                            ContentMessage = $"Status code {response.StatusCode}({Enum.GetName(response.StatusCode)})"
-                        });
+                    var statusCode = response.StatusCode;
 
-                        msgw.ShowDialog(this);
-                    }));
+                    if (statusCode == System.Net.HttpStatusCode.BadRequest)
+                    {
+                        string scontent = await response.Content.ReadAsStringAsync();
+
+                        notifyManager.Show(new Notification("Ошибка", "Произошла ошибка загрузки\r\nНажмите сюда для просмотра подробностей", NotificationType.Error, onClick: () =>
+                        {
+                            var msgw = MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams()
+                            {
+                                ContentTitle = "Подробности",
+                                ContentMessage = scontent
+                            });
+
+                            msgw.ShowWindowDialogAsync(this);
+                        }));
+                    }
+                    else if (statusCode == System.Net.HttpStatusCode.BadGateway && response.Content is StringContent sc)
+                    {
+                        var content = await sc.ReadAsStringAsync();
+
+                        await ShowMessageBox($"Подробности {System.Net.HttpStatusCode.BadGateway}({Enum.GetName(System.Net.HttpStatusCode.BadGateway)})", content);
+                    }
+                    else
+                    {
+
+                        notifyManager.Show(new Notification("Ошибка", "Произошла ошибка загрузки\r\nНажмите сюда для просмотра подробностей", NotificationType.Error, onClick: () =>
+                        {
+                            var msgw = MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams()
+                            {
+                                ContentTitle = "Подробности",
+                                ContentMessage = $"Status code {(int)statusCode}({Enum.GetName(statusCode)})"
+                            });
+
+                            msgw.ShowWindowDialogAsync(this);
+                        }));
+                    }
                 }
 
             }, new Dictionary<string, string>() {
@@ -541,13 +548,13 @@ namespace NU.SimpleClient
 
                     notifyManager.Show(new Notification("Ошибка", msg, NotificationType.Warning, onClick: () =>
                     {
-                        var msgw = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBox.Avalonia.DTO.MessageBoxStandardParams()
+                        var msgw = MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams()
                         {
                             ContentTitle = "Подробности",
                             ContentMessage = msg
                         });
 
-                        msgw.ShowDialog(this);
+                        msgw.ShowWindowDialogAsync(this);
                     }));
 
                     UploadFileList.Remove(exFile);
@@ -558,13 +565,13 @@ namespace NU.SimpleClient
 
                     notifyManager.Show(new Notification("Ошибка", msg, NotificationType.Warning, onClick: () =>
                     {
-                        var msgw = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBox.Avalonia.DTO.MessageBoxStandardParams()
+                        var msgw = MessageBoxManager.GetMessageBoxStandard(new MsBox.Avalonia.Dto.MessageBoxStandardParams()
                         {
                             ContentTitle = "Подробности",
                             ContentMessage = msg
                         });
 
-                        msgw.ShowDialog(this);
+                        msgw.ShowWindowDialogAsync(this);
                     }));
                     return false;
                 }
