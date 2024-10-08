@@ -12,6 +12,7 @@ using System.IO;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using NUServer.Utils;
 
 namespace NUServer.Managers
 {
@@ -220,7 +221,7 @@ namespace NUServer.Managers
 
             var nugetPath = GetPackageVersionNuPkgPath(user.Id, NuGetFile);
 
-            using (var fs = File.Create(Path.Combine(getBasePackagesPath(), nugetPath)))
+            using (var fs = File.Create(Path.Combine(getBasePackagesPath(), nugetPath).CreateFileDirectoryIfNoExists()))
                 stream.CopyTo(fs);
 
             using var nuspecStream = new MemoryStream();
@@ -231,7 +232,7 @@ namespace NUServer.Managers
 
             var nuspecPath = GetPackageVersionNuSpecPath(user.Id, NuGetFile);
 
-            using (var fs = File.Create(Path.Combine(getBasePackagesPath(), nuspecPath)))
+            using (var fs = File.Create(Path.Combine(getBasePackagesPath(), nuspecPath).CreateFileDirectoryIfNoExists()))
                 stream.CopyTo(nuspecStream);
 
             NuGetFile.Dispose();

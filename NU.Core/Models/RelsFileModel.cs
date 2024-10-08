@@ -10,6 +10,11 @@ namespace NU.Core.Models
 
         [XmlElement("Relationship")]
         public List<RelationshipModel> Relationships { get; set; }
+
+        public RelsFileModel()
+        {
+            
+        }
     }
 
     public class RelationshipModel
@@ -22,5 +27,10 @@ namespace NU.Core.Models
 
         [XmlAttribute]
         public string Id { get; set; }
+
+        public RelationshipModel()
+        {
+            
+        }
     }
 }

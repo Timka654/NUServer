@@ -4,13 +4,28 @@ using System.Xml.Serialization;
 namespace NU.Core.Models
 {
     [XmlRoot("package", Namespace = "http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd")]
-    public class NuSpecFileModel2010 : NuSpecFileModel { }
+    public class NuSpecFileModel2010 : NuSpecFileModel {
+        public NuSpecFileModel2010()
+        {
+            
+        }
+    }
 
     [XmlRoot("package", Namespace = "http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd")]
-    public class NuSpecFileModel2012 : NuSpecFileModel { }
+    public class NuSpecFileModel2012 : NuSpecFileModel {
+        public NuSpecFileModel2012()
+        {
+            
+        }
+    }
 
     [XmlRoot("package", Namespace = "http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd")]
-    public class NuSpecFileModel2013 : NuSpecFileModel { }
+    public class NuSpecFileModel2013 : NuSpecFileModel {
+        public NuSpecFileModel2013()
+        {
+            
+        }
+    }
 
     public class NuSpecFileModel
     {
@@ -18,6 +33,11 @@ namespace NU.Core.Models
 
         [XmlElement("metadata")]
         public NuSpecMetadataModel Metadata { get; set; }
+
+        public NuSpecFileModel()
+        {
+            
+        }
     }
 
     public class NuSpecMetadataModel
@@ -75,18 +95,33 @@ namespace NU.Core.Models
 
         [XmlElement("frameworkReferences")]
         public NuSpecFrameworkReferencesModel FrameworkReferences { get; set; }
+
+        public NuSpecMetadataModel()
+        {
+            
+        }
     }
 
     public class NuSpecDependenciesModel
     {
         [XmlElement("group")]
         public List<NuSpecDependencyGroupModel> Groups { get; set; }
+
+        public NuSpecDependenciesModel()
+        {
+            
+        }
     }
 
     public class NuSpecFrameworkReferencesModel
     {
         [XmlElement("group")]
         public List<NuSpecFrameworkReferenceGroupModel> Groups { get; set; }
+
+        public NuSpecFrameworkReferencesModel()
+        {
+            
+        }
     }
 
     public class NuSpecFrameworkReferenceGroupModel
@@ -96,6 +131,11 @@ namespace NU.Core.Models
 
         [XmlElement("dependency")]
         public List<NuSpecFrameworkReferenceModel> Dependency { get; set; }
+
+        public NuSpecFrameworkReferenceGroupModel()
+        {
+            
+        }
     }
 
     public class NuSpecDependencyGroupModel
@@ -105,6 +145,11 @@ namespace NU.Core.Models
 
         [XmlElement("dependency")]
         public List<NuSpecDependencyModel> Dependency { get; set; }
+
+        public NuSpecDependencyGroupModel()
+        {
+            
+        }
     }
 
     public class NuSpecDependencyModel
@@ -117,11 +162,21 @@ namespace NU.Core.Models
 
         [XmlAttribute("exclude")]
         public string Exclude { get; set; }
+
+        public NuSpecDependencyModel()
+        {
+            
+        }
     }
 
     public class NuSpecFrameworkReferenceModel
     {
         [XmlAttribute("name")]
         public string Name { get; set; }
+
+        public NuSpecFrameworkReferenceModel()
+        {
+            
+        }
     }
 }

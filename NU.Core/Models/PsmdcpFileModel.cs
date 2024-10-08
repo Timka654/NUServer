@@ -22,5 +22,10 @@ namespace NU.Core.Models
 
         [XmlElement("lastModifiedBy")]
         public string LastModifiedBy { get; set; }
+
+        public PsmdcpFileModel()
+        {
+            
+        }
     }
 }

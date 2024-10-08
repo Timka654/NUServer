@@ -11,5 +11,10 @@ namespace NU.Core.Models
         public virtual string Type { get; set; }
 
         public virtual string Comment { get; set; }
+
+        public IndexResourceModel()
+        {
+                
+        }
     }
 }

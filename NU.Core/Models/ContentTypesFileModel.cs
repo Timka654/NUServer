@@ -8,6 +8,11 @@ namespace NU.Core.Models
     {
         [XmlElement("Default")]
         public List<ContentTypesFileDefaultModel> Types { get; set; }
+
+        public ContentTypesFileModel()
+        {
+                
+        }
     }
 
     public class ContentTypesFileDefaultModel
@@ -17,5 +22,10 @@ namespace NU.Core.Models
 
         [XmlAttribute]
         public string ContentType { get; set; }
+
+        public ContentTypesFileDefaultModel()
+        {
+                
+        }
     }
 }
